@@ -1525,7 +1525,7 @@ static int const RCTVideoUnset = -1;
 
 - (void)setFilter:(NSString *)filterName {
   _filterName = filterName;
-  
+  // test
   if (!_filterEnabled) {
     return;
   } else if ([[_source objectForKey:@"uri"] rangeOfString:@"m3u8"].location != NSNotFound) {
