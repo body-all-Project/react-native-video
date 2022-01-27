@@ -35,26 +35,26 @@ static int const RCTVideoUnset = -1;
   NSURL *_videoURL;
   BOOL _requestingCertificate;
   BOOL _requestingCertificateErrored;
-  
+
   /* DRM */
   NSDictionary *_drm;
   AVAssetResourceLoadingRequest *_loadingRequest;
-  
+
   /* Required to publish events */
   RCTEventDispatcher *_eventDispatcher;
   BOOL _playbackRateObserverRegistered;
   BOOL _isExternalPlaybackActiveObserverRegistered;
   BOOL _videoLoadStarted;
-  
+
   bool _pendingSeek;
   float _pendingSeekTime;
   float _lastSeekTime;
-  
+
   /* For sending videoProgress events */
   Float64 _progressUpdateInterval;
   BOOL _controls;
   id _timeObserver;
-  
+
   /* Keep track of any modifiers, need to be applied after each play */
   float _volume;
   float _rate;
@@ -83,6 +83,7 @@ static int const RCTVideoUnset = -1;
   BOOL _fullscreenPlayerPresented;
   NSString *_filterName;
   NSArray * _colorCorrection;
+  NSDictionary * _sticker;
   BOOL _filterEnabled;
   UIViewController * _presentingViewController;
 #if __has_include(<react-native-video/RCTVideoCache.h>)
@@ -398,6 +399,7 @@ static int const RCTVideoUnset = -1;
         [self setAutomaticallyWaitsToMinimizeStalling:_automaticallyWaitsToMinimizeStalling];
       }
 
+
       //Perform on next run loop, otherwise onVideoLoadStart is nil
       if (self.onVideoLoadStart) {
         id uri = [self->_source objectForKey:@"uri"];
@@ -417,6 +419,68 @@ static int const RCTVideoUnset = -1;
 
 - (void)setDrm:(NSDictionary *)drm {
   _drm = drm;
+}
+
+- (void)setSticker:(NSDictionary *)sticker {
+  _sticker = sticker;
+
+    bool isNetwork = [RCTConvert BOOL:[sticker objectForKey:@"isNetwork"]];
+    bool isAsset = [RCTConvert BOOL:[sticker objectForKey:@"isAsset"]];
+//    bool shouldCache = [RCTConvert BOOL:[sticker objectForKey:@"shouldCache"]];
+
+    NSString *uri = [sticker objectForKey:@"uri"];
+    NSString *type = [sticker objectForKey:@"type"];
+////    AVURLAsset *asset;
+//    if (!uri || [uri isEqualToString:@""]) {
+//      DebugLog(@"Could not find video URL in source '%@'", sticker);
+//      return;
+//    }
+//
+    NSURL *url = isNetwork || isAsset
+      ? [NSURL URLWithString:uri]
+      : [[NSURL alloc] initFileURLWithPath:[[NSBundle mainBundle] pathForResource:uri ofType:type]];
+//    NSMutableDictionary *assetOptions = [[NSMutableDictionary alloc] init];
+
+//    if (isNetwork) {
+//      NSDictionary *headers = [sticker objectForKey:@"requestHeaders"];
+//      if ([headers count] > 0) {
+//        [assetOptions setObject:headers forKey:@"AVURLAssetHTTPHeaderFieldsKey"];
+//      }
+//      NSArray *cookies = [[NSHTTPCookieStorage sharedHTTPCookieStorage] cookies];
+//      [assetOptions setObject:cookies forKey:AVURLAssetHTTPCookiesKey];
+//
+//  #if __has_include(<react-native-video/RCTVideoCache.h>)
+//      if (shouldCache && (!_textTracks || !_textTracks.count)) {
+//        /* The DVURLAsset created by cache doesn't have a tracksWithMediaType property, so trying
+//         * to bring in the text track code will crash. I suspect this is because the asset hasn't fully loaded.
+//         * Until this is fixed, we need to bypass caching when text tracks are specified.
+//         */
+//        DebugLog(@"Caching is not supported for uri '%@' because text tracks are not compatible with the cache. Checkout https://github.com/react-native-community/react-native-video/blob/master/docs/caching.md", uri);
+//        [self playerItemForSourceUsingCache:uri assetOptions:assetOptions withCallback:handler];
+//        return;
+//      }
+//  #endif
+//
+//      asset = [AVURLAsset URLAssetWithURL:url options:assetOptions];
+//    }
+
+    NSData *data = [NSData dataWithContentsOfURL:url];
+    UIImage *img = [UIImage imageWithData:data];
+//
+    CALayer * aLayer       = [CALayer layer];
+    aLayer.frame           = CGRectMake((100)+100, (100)+100, 120, 120);
+//     aLayer.backgroundColor = [UIColor redColor].CGColor;
+    aLayer.contents = (id)img.CGImage;;
+
+
+    AVSynchronizedLayer * synchronizedLayer =
+      [AVSynchronizedLayer synchronizedLayerWithPlayerItem:_playerItem];
+
+    synchronizedLayer.frame = [UIScreen mainScreen].bounds;
+
+    [synchronizedLayer addSublayer:aLayer];
+
+    [_playerLayer insertSublayer:synchronizedLayer above:_playerLayer];
 }
 
 - (NSURL*) urlFilePath:(NSString*) filepath {
@@ -1586,7 +1650,9 @@ static int const RCTVideoUnset = -1;
                                               [request finishWithImage:outputImage context:nil];
 
                                           }
-                                        }];
+                                        }
+
+        ];
 
 }
 
@@ -1607,7 +1673,7 @@ static int const RCTVideoUnset = -1;
   {
     [self setControls:true];
   }
-  
+
   if( _controls )
   {
     view.frame = self.bounds;
@@ -1639,7 +1705,7 @@ static int const RCTVideoUnset = -1;
   if( _controls )
   {
     _playerViewController.view.frame = self.bounds;
-    
+
     // also adjust all subviews of contentOverlayView
     for (UIView* subview in _playerViewController.contentOverlayView.subviews) {
       subview.frame = self.bounds;
@@ -1668,36 +1734,36 @@ static int const RCTVideoUnset = -1;
     _isExternalPlaybackActiveObserverRegistered = NO;
   }
   _player = nil;
-  
+
   [self removePlayerLayer];
-  
+
   [_playerViewController.contentOverlayView removeObserver:self forKeyPath:@"frame"];
   [_playerViewController removeObserver:self forKeyPath:readyForDisplayKeyPath];
   [_playerViewController.view removeFromSuperview];
   _playerViewController.rctDelegate = nil;
   _playerViewController.player = nil;
   _playerViewController = nil;
-  
+
   [self removePlayerTimeObserver];
   [self removePlayerItemObservers];
-  
+
   _eventDispatcher = nil;
   [[NSNotificationCenter defaultCenter] removeObserver:self];
-  
+
   [super removeFromSuperview];
 }
 
 #pragma mark - Export
 
 - (void)save:(NSDictionary *)options resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-  
+
   AVAsset *asset = _playerItem.asset;
-  
+
   if (asset != nil) {
-    
+
     AVAssetExportSession *exportSession = [AVAssetExportSession
                                            exportSessionWithAsset:asset presetName:AVAssetExportPresetHighestQuality];
-    
+
     if (exportSession != nil) {
       NSString *path = nil;
       NSArray *array = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
@@ -1709,7 +1775,7 @@ static int const RCTVideoUnset = -1;
       exportSession.videoComposition = _playerItem.videoComposition;
       exportSession.shouldOptimizeForNetworkUse = true;
       [exportSession exportAsynchronouslyWithCompletionHandler:^{
-        
+
         switch ([exportSession status]) {
           case AVAssetExportSessionStatusFailed:
             reject(@"ERROR_COULD_NOT_EXPORT_VIDEO", @"Could not export video", exportSession.error);
@@ -1721,19 +1787,19 @@ static int const RCTVideoUnset = -1;
             resolve(@{@"uri": url.absoluteString});
             break;
         }
-        
+
       }];
-      
+
     } else {
-      
+
       reject(@"ERROR_COULD_NOT_CREATE_EXPORT_SESSION", @"Could not create export session", nil);
-      
+
     }
-    
+
   } else {
-    
+
     reject(@"ERROR_ASSET_NIL", @"Asset is nil", nil);
-    
+
   }
 }
 
@@ -1846,7 +1912,7 @@ didCancelLoadingRequest:(AVAssetResourceLoadingRequest *)loadingRequest {
           if ([self->_drm objectForKey:@"base64Certificate"]) {
             certificateData = [[NSData alloc] initWithBase64EncodedData:certificateData options:NSDataBase64DecodingIgnoreUnknownCharacters];
           }
-          
+
           if (certificateData != nil) {
             NSData *contentIdData;
             if(self.onGetLicense) {
@@ -1898,7 +1964,7 @@ didCancelLoadingRequest:(AVAssetResourceLoadingRequest *)loadingRequest {
                     NSData *postData = [post dataUsingEncoding:NSUTF8StringEncoding allowLossyConversion:YES];
                     [request setHTTPBody: postData];
                   }
-                  
+
                   NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
                   NSURLSession *session = [NSURLSession sessionWithConfiguration:configuration delegate:self delegateQueue:nil];
                   NSURLSessionDataTask *postDataTask = [session dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
@@ -1945,7 +2011,7 @@ didCancelLoadingRequest:(AVAssetResourceLoadingRequest *)loadingRequest {
                   }];
                   [postDataTask resume];
                 }
-                
+
               } else {
                 NSError *licenseError = [NSError errorWithDomain: @"RCTVideo"
                                                             code: RCTVideoErrorNoSPC
@@ -1958,7 +2024,7 @@ didCancelLoadingRequest:(AVAssetResourceLoadingRequest *)loadingRequest {
                 [self finishLoadingWithError:licenseError];
                 self->_requestingCertificateErrored = YES;
               }
-              
+
             } else {
               NSError *licenseError = [NSError errorWithDomain: @"RCTVideo"
                                                           code: RCTVideoErrorNoDataRequest
@@ -2007,7 +2073,7 @@ didCancelLoadingRequest:(AVAssetResourceLoadingRequest *)loadingRequest {
                                ];
       return [self finishLoadingWithError:licenseError];
     }
-    
+
   } else {
     NSError *licenseError = [NSError errorWithDomain: @"RCTVideo"
                                                 code: RCTVideoErrorNoDRMData
@@ -2019,8 +2085,8 @@ didCancelLoadingRequest:(AVAssetResourceLoadingRequest *)loadingRequest {
                              ];
     return [self finishLoadingWithError:licenseError];
   }
-  
-  
+
+
   return NO;
 }
 
@@ -2052,15 +2118,15 @@ didCancelLoadingRequest:(AVAssetResourceLoadingRequest *)loadingRequest {
 }
 
 - (void)pictureInPictureControllerWillStopPictureInPicture:(AVPictureInPictureController *)pictureInPictureController {
-  
+
 }
 
 - (void)pictureInPictureControllerWillStartPictureInPicture:(AVPictureInPictureController *)pictureInPictureController {
-  
+
 }
 
 - (void)pictureInPictureController:(AVPictureInPictureController *)pictureInPictureController failedToStartPictureInPictureWithError:(NSError *)error {
-  
+
 }
 
 - (void)pictureInPictureController:(AVPictureInPictureController *)pictureInPictureController restoreUserInterfaceForPictureInPictureStopWithCompletionHandler:(void (^)(BOOL))completionHandler {
