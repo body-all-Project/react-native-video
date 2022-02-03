@@ -427,7 +427,7 @@ static int const RCTVideoUnset = -1;
   _drm = drm;
 }
 
-- (void)stickerGesture:(UIPanGestureRecognizer *)gesture
+- (void)stickerPanGesture:(UIPanGestureRecognizer *)gesture
 {
 
     switch (gesture.state) {
@@ -443,6 +443,50 @@ static int const RCTVideoUnset = -1;
             gestureView.center = CGPointMake(gestureView.center.x + point.x, gestureView.center.y + point.y);
 
             [gesture setTranslation:CGPointZero inView:gestureView];
+
+            break;
+        }
+
+        default:
+            break;
+    }
+}
+
+- (void)stickerPinchGesture:(UIPinchGestureRecognizer *)gesture
+{
+
+    switch (gesture.state) {
+        case UIGestureRecognizerStateBegan:
+//            self.startPoint = [gesture locationInView:self];
+            break;
+        case UIGestureRecognizerStateChanged:
+        {
+//            CGPoint point = [gesture locationInView:self];
+            UIView *gestureView = gesture.view;
+            gestureView.transform = CGAffineTransformScale(gestureView.transform, gesture.scale, gesture.scale);
+            gesture.scale = 1;
+
+            break;
+        }
+
+        default:
+            break;
+    }
+}
+
+- (void)stickerRotationGesture:(UIRotationGestureRecognizer *)gesture
+{
+
+    switch (gesture.state) {
+        case UIGestureRecognizerStateBegan:
+//            self.startPoint = [gesture locationInView:self];
+            break;
+        case UIGestureRecognizerStateChanged:
+        {
+//            CGPoint point = [gesture locationInView:self];
+            UIView *gestureView = gesture.view;
+            gestureView.transform = CGAffineTransformRotate(gestureView.transform, gesture.rotation);
+            gesture.rotation = 0;
 
             break;
         }
@@ -468,12 +512,21 @@ static int const RCTVideoUnset = -1;
     NSData *data = [NSData dataWithContentsOfURL:url];
     UIImage *img = [UIImage imageWithData:data];
     UIImageView *imgView = [[UIImageView alloc] initWithImage: img];
-    imgView.frame = CGRectMake(200, 200, 200, 200);
+    imgView.frame = CGRectMake(150, 150, 100, 100);
     imgView.userInteractionEnabled = true;
 
-    UIPanGestureRecognizer *stickerGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(stickerGesture:)];
+    // pan gesture
+    UIPanGestureRecognizer *stickerGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(stickerPanGesture:)];
     stickerGestureRecognizer.delegate = self;
     [imgView addGestureRecognizer:stickerGestureRecognizer];
+
+    // pinch
+    UIPinchGestureRecognizer *stickerPinchGestureRecognizer = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(stickerPinchGesture:)];
+    [imgView addGestureRecognizer:stickerPinchGestureRecognizer];
+
+    // rotation
+    UIRotationGestureRecognizer *stickerRotationGestureRecognizer = [[UIRotationGestureRecognizer alloc] initWithTarget:self action:@selector(stickerRotationGesture:)];
+    [imgView addGestureRecognizer:stickerRotationGestureRecognizer];
 
     if (_playerViewController) {
         UIViewController *viewController = [self reactViewController];
@@ -1664,6 +1717,24 @@ static int const RCTVideoUnset = -1;
 
 
 }
+
+// TODO : 비디어에 빈레이어 주고 빈레이어에 대해 필터링을 한다. -> 비디오의 버벅거림 버그 방지 : 어느정도 예측임 시도해볼것.
+
+- (void)setEmptyLayer {
+    CALayer * aLayer       = [CALayer layer];
+    aLayer.frame           = CGRectMake((100)+100, (100)+100, 120, 120);
+    aLayer.backgroundColor = [UIColor redColor].CGColor;
+
+//    AVSynchronizedLayer * synchronizedLayer =
+//      [AVSynchronizedLayer synchronizedLayerWithPlayerItem:_playerItem];
+//
+//    synchronizedLayer.frame = [UIScreen mainScreen].bounds;
+//
+//    [synchronizedLayer addSublayer:aLayer];
+//
+//    [_playerLayer insertSublayer:synchronizedLayer above:_playerLayer];
+}
+
 
 - (void)setFilterEnabled:(BOOL)filterEnabled {
   _filterEnabled = filterEnabled;
