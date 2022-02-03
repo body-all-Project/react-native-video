@@ -22,6 +22,7 @@ static int const RCTVideoUnset = -1;
     #define DebugLog(...) (void)0
 #endif
 
+
 @implementation RCTVideo
 {
   AVPlayer *_player;
@@ -155,9 +156,10 @@ static int const RCTVideoUnset = -1;
 - (RCTVideoPlayerViewController*)createPlayerViewController:(AVPlayer*)player
                                              withPlayerItem:(AVPlayerItem*)playerItem {
   RCTVideoPlayerViewController* viewController = [[RCTVideoPlayerViewController alloc] init];
-  viewController.showsPlaybackControls = YES;
+
+  viewController.showsPlaybackControls = NO;
   viewController.rctDelegate = self;
-  viewController.preferredOrientation = _fullscreenOrientation;
+//  viewController.preferredOrientation = _fullscreenOrientation;
 
   viewController.view.frame = self.bounds;
   viewController.player = player;
@@ -411,14 +413,43 @@ static int const RCTVideoUnset = -1;
                                 @"drm": self->_drm ? self->_drm : [NSNull null],
                                 @"target": self.reactTag
                                 });
+
+
+
       }
     }];
   });
   _videoLoadStarted = YES;
 }
 
+
 - (void)setDrm:(NSDictionary *)drm {
   _drm = drm;
+}
+
+- (void)stickerGesture:(UIPanGestureRecognizer *)gesture
+{
+
+    switch (gesture.state) {
+        case UIGestureRecognizerStateBegan:
+//            self.startPoint = [gesture locationInView:self];
+            break;
+        case UIGestureRecognizerStateChanged:
+        {
+//            CGPoint point = [gesture locationInView:self];
+            UIView *gestureView = gesture.view;
+            CGPoint point = [gesture translationInView:gestureView];
+
+            gestureView.center = CGPointMake(gestureView.center.x + point.x, gestureView.center.y + point.y);
+
+            [gesture setTranslation:CGPointZero inView:gestureView];
+
+            break;
+        }
+
+        default:
+            break;
+    }
 }
 
 - (void)setSticker:(NSDictionary *)sticker {
@@ -426,62 +457,38 @@ static int const RCTVideoUnset = -1;
 
     bool isNetwork = [RCTConvert BOOL:[sticker objectForKey:@"isNetwork"]];
     bool isAsset = [RCTConvert BOOL:[sticker objectForKey:@"isAsset"]];
-//    bool shouldCache = [RCTConvert BOOL:[sticker objectForKey:@"shouldCache"]];
 
     NSString *uri = [sticker objectForKey:@"uri"];
     NSString *type = [sticker objectForKey:@"type"];
-////    AVURLAsset *asset;
-//    if (!uri || [uri isEqualToString:@""]) {
-//      DebugLog(@"Could not find video URL in source '%@'", sticker);
-//      return;
-//    }
-//
+
     NSURL *url = isNetwork || isAsset
       ? [NSURL URLWithString:uri]
       : [[NSURL alloc] initFileURLWithPath:[[NSBundle mainBundle] pathForResource:uri ofType:type]];
-//    NSMutableDictionary *assetOptions = [[NSMutableDictionary alloc] init];
-
-//    if (isNetwork) {
-//      NSDictionary *headers = [sticker objectForKey:@"requestHeaders"];
-//      if ([headers count] > 0) {
-//        [assetOptions setObject:headers forKey:@"AVURLAssetHTTPHeaderFieldsKey"];
-//      }
-//      NSArray *cookies = [[NSHTTPCookieStorage sharedHTTPCookieStorage] cookies];
-//      [assetOptions setObject:cookies forKey:AVURLAssetHTTPCookiesKey];
-//
-//  #if __has_include(<react-native-video/RCTVideoCache.h>)
-//      if (shouldCache && (!_textTracks || !_textTracks.count)) {
-//        /* The DVURLAsset created by cache doesn't have a tracksWithMediaType property, so trying
-//         * to bring in the text track code will crash. I suspect this is because the asset hasn't fully loaded.
-//         * Until this is fixed, we need to bypass caching when text tracks are specified.
-//         */
-//        DebugLog(@"Caching is not supported for uri '%@' because text tracks are not compatible with the cache. Checkout https://github.com/react-native-community/react-native-video/blob/master/docs/caching.md", uri);
-//        [self playerItemForSourceUsingCache:uri assetOptions:assetOptions withCallback:handler];
-//        return;
-//      }
-//  #endif
-//
-//      asset = [AVURLAsset URLAssetWithURL:url options:assetOptions];
-//    }
 
     NSData *data = [NSData dataWithContentsOfURL:url];
     UIImage *img = [UIImage imageWithData:data];
-//
-    CALayer * aLayer       = [CALayer layer];
-    aLayer.frame           = CGRectMake((100)+100, (100)+100, 120, 120);
-//     aLayer.backgroundColor = [UIColor redColor].CGColor;
-    aLayer.contents = (id)img.CGImage;;
+    UIImageView *imgView = [[UIImageView alloc] initWithImage: img];
+    imgView.frame = CGRectMake(200, 200, 200, 200);
+    imgView.userInteractionEnabled = true;
+
+    UIPanGestureRecognizer *stickerGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(stickerGesture:)];
+    stickerGestureRecognizer.delegate = self;
+    [imgView addGestureRecognizer:stickerGestureRecognizer];
+
+    if (_playerViewController) {
+        UIViewController *viewController = [self reactViewController];
+
+        viewController.view.translatesAutoresizingMaskIntoConstraints = false;
+
+        [viewController.view addSubview:imgView];
+        [viewController addChildViewController:_playerViewController];
+
+        [self addSubview:_playerViewController.view];
+    }
 
 
-    AVSynchronizedLayer * synchronizedLayer =
-      [AVSynchronizedLayer synchronizedLayerWithPlayerItem:_playerItem];
-
-    synchronizedLayer.frame = [UIScreen mainScreen].bounds;
-
-    [synchronizedLayer addSublayer:aLayer];
-
-    [_playerLayer insertSublayer:synchronizedLayer above:_playerLayer];
 }
+
 
 - (NSURL*) urlFilePath:(NSString*) filepath {
   if ([filepath containsString:@"file://"]) {
@@ -1654,8 +1661,9 @@ static int const RCTVideoUnset = -1;
 
         ];
 
-}
 
+
+}
 
 - (void)setFilterEnabled:(BOOL)filterEnabled {
   _filterEnabled = filterEnabled;
