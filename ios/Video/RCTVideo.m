@@ -522,10 +522,12 @@ static int const RCTVideoUnset = -1;
 
     // pinch
     UIPinchGestureRecognizer *stickerPinchGestureRecognizer = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(stickerPinchGesture:)];
+    stickerPinchGestureRecognizer.delegate = self;
     [imgView addGestureRecognizer:stickerPinchGestureRecognizer];
 
     // rotation
     UIRotationGestureRecognizer *stickerRotationGestureRecognizer = [[UIRotationGestureRecognizer alloc] initWithTarget:self action:@selector(stickerRotationGesture:)];
+    stickerRotationGestureRecognizer.delegate = self;
     [imgView addGestureRecognizer:stickerRotationGestureRecognizer];
 
     if (_playerViewController) {
@@ -539,6 +541,7 @@ static int const RCTVideoUnset = -1;
         [self addSubview:_playerViewController.view];
     }
 
+    NSURL *reUrl = self.urlOfCurrentlyPlayingInPlayer;
 
 }
 
@@ -2167,6 +2170,15 @@ didCancelLoadingRequest:(AVAssetResourceLoadingRequest *)loadingRequest {
 
 
   return NO;
+}
+
+-(NSURL *)urlOfCurrentlyPlayingInPlayer {
+    // get current asset
+    AVAsset *currentPlayerAsset = _player.currentItem.asset;
+    // make sure the current asset is an AVURLAsset
+    if (![currentPlayerAsset isKindOfClass:AVURLAsset.class]) return nil;
+    // return the NSURL
+    return [(AVURLAsset *)currentPlayerAsset URL];
 }
 
 - (NSData *)base64DataFromBase64String: (NSString *)base64String {
