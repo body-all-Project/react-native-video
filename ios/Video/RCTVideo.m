@@ -28,9 +28,13 @@ static int const RCTVideoUnset = -1;
   AVPlayer *_player;
   AVPlayerItem *_playerItem;
   NSDictionary *_source;
+
+
   BOOL _openTrash;
   BOOL _isTrashMode;
   BOOL _isScaleDown;
+  float _prevScale;
+
   BOOL _playerItemObserversSet;
   BOOL _playerBufferEmpty;
   AVPlayerLayer *_playerLayer;
@@ -130,6 +134,7 @@ static int const RCTVideoUnset = -1;
     _openTrash = false;
     _isTrashMode = false;
     _isScaleDown = false;
+    _prevScale = 1.0;
 
 #if TARGET_OS_IOS
     _restoreUserInterfaceForPIPStopCompletionHandler = NULL;
@@ -437,10 +442,12 @@ static int const RCTVideoUnset = -1;
 
 - (void)stickerPanGesture:(UIPanGestureRecognizer *)gesture
 {
+
     UIView *gestureView = gesture.view;
     CGPoint point = [gesture translationInView:gestureView];
 
-    // react native 단에서 쓰레기 위치를 바텀 기준 7%로 잡음
+
+    // react native 단에서 쓰레기 위치를 바텀 기준 10%로 잡음
     // height은 top 기준
     double trashBottomPosition = round(self.bounds.size.height * 0.90);
     double trashCenterPosition = round(self.bounds.size.width / 2);
@@ -461,6 +468,7 @@ static int const RCTVideoUnset = -1;
             if (isXTrashArea && isYTrashArea) {
                 _openTrash = true;
                 if (!_isScaleDown && _isTrashMode) {
+                    _prevScale = gestureView.transform.a;
                     gestureView.transform = CGAffineTransformMakeScale(0.5, 0.5);
                     _isScaleDown = true;
                 }
@@ -468,7 +476,7 @@ static int const RCTVideoUnset = -1;
                 _openTrash = false;
 
                 if (_isScaleDown && _isTrashMode) {
-                    gestureView.transform = CGAffineTransformMakeScale(1, 1);
+                    gestureView.transform = CGAffineTransformMakeScale(_prevScale, _prevScale);
                     _isScaleDown = false;
                 }
             }
