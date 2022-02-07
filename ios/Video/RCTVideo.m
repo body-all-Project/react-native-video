@@ -496,6 +496,37 @@ static int const RCTVideoUnset = -1;
     }
 }
 
+- (void)stickerLongPressGesture:(UILongPressGestureRecognizer *)gesture
+{
+    switch (gesture.state) {
+        case UIGestureRecognizerStateBegan:
+            if (self.onLongPressSticker) {
+                self.onLongPressSticker(@{
+                    @"isLongPress": @(YES)
+                                   });
+            }
+
+            break;
+        case UIGestureRecognizerStateChanged:
+        {
+
+            break;
+        }
+        case UIGestureRecognizerStateEnded: {
+            if (self.onLongPressSticker) {
+                self.onLongPressSticker(@{
+                    @"isLongPress": @(NO)
+                                   });
+            }
+            break;
+        }
+
+        default:
+            break;
+    }
+}
+
+
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer
 {
     if (![gestureRecognizer isKindOfClass:[UITapGestureRecognizer class]] && ![otherGestureRecognizer isKindOfClass:[UITapGestureRecognizer class]])  {
@@ -542,6 +573,13 @@ static int const RCTVideoUnset = -1;
     UIRotationGestureRecognizer *stickerRotationGestureRecognizer = [[UIRotationGestureRecognizer alloc] initWithTarget:self action:@selector(stickerRotationGesture:)];
     stickerRotationGestureRecognizer.delegate = self;
     [imgView addGestureRecognizer:stickerRotationGestureRecognizer];
+
+    // longpress stickerLongPressGesture
+    UILongPressGestureRecognizer *stickerLongPressGestureRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(stickerLongPressGesture:)];
+    stickerLongPressGestureRecognizer.delegate = self;
+    stickerLongPressGestureRecognizer.minimumPressDuration = 0.7;
+    [imgView addGestureRecognizer:stickerLongPressGestureRecognizer];
+
 
     if (_playerViewController) {
         UIViewController *viewController = [self reactViewController];

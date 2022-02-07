@@ -75,7 +75,7 @@ RCT_EXPORT_VIEW_PROPERTY(onPlaybackResume, RCTDirectEventBlock);
 RCT_EXPORT_VIEW_PROPERTY(onPlaybackRateChange, RCTDirectEventBlock);
 RCT_EXPORT_VIEW_PROPERTY(onVideoExternalPlaybackChange, RCTDirectEventBlock);
 RCT_EXPORT_VIEW_PROPERTY(onGetLicense, RCTDirectEventBlock);
-RCT_EXPORT_VIEW_PROPERTY(addStricker, RCTDirectEventBlock);
+RCT_EXPORT_VIEW_PROPERTY(onLongPressSticker, RCTDirectEventBlock);
 
 RCT_REMAP_METHOD(save,
         options:(NSDictionary *)options
