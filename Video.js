@@ -109,6 +109,16 @@ _onLoad = (event) => {
   }
 };
 
+_onLongPressSticker = (event) => {
+  // Need to hide poster here for windows as onReadyForDisplay is not implemented
+  if (Platform.OS === 'windows') {
+    this._hidePoster();
+  }
+  if (this.props.onLongPressSticker) {
+    this.props.onLongPressSticker(event.nativeEvent);
+  }
+};
+
 _onError = (event) => {
   if (this.props.onError) {
     this.props.onError(event.nativeEvent);
@@ -377,6 +387,7 @@ render() {
     sticker,
     onVideoLoadStart: this._onLoadStart,
     onVideoLoad: this._onLoad,
+    onLongPressSticker: this._onLongPressSticker,
     onVideoError: this._onError,
     onVideoProgress: this._onProgress,
     onVideoSeek: this._onSeek,
@@ -558,6 +569,7 @@ Video.propTypes = {
   hideShutterView: PropTypes.bool,
   onLoadStart: PropTypes.func,
   onLoad: PropTypes.func,
+  onLongPressSticker: PropTypes.func,
   onBuffer: PropTypes.func,
   onError: PropTypes.func,
   onProgress: PropTypes.func,
