@@ -496,6 +496,16 @@ static int const RCTVideoUnset = -1;
     }
 }
 
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer
+{
+    if (![gestureRecognizer isKindOfClass:[UITapGestureRecognizer class]] && ![otherGestureRecognizer isKindOfClass:[UITapGestureRecognizer class]])  {
+        return YES;
+    }
+
+    return NO;
+}
+
+
 - (void)setSticker:(NSDictionary *)sticker {
   _sticker = sticker;
 
@@ -512,13 +522,16 @@ static int const RCTVideoUnset = -1;
     NSData *data = [NSData dataWithContentsOfURL:url];
     UIImage *img = [UIImage imageWithData:data];
     UIImageView *imgView = [[UIImageView alloc] initWithImage: img];
-    imgView.frame = CGRectMake(150, 150, 100, 100);
+    imgView.frame = CGRectMake(150, 150, 130, 130);
     imgView.userInteractionEnabled = true;
+    imgView.multipleTouchEnabled = true;
+
 
     // pan gesture
-    UIPanGestureRecognizer *stickerGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(stickerPanGesture:)];
-    stickerGestureRecognizer.delegate = self;
-    [imgView addGestureRecognizer:stickerGestureRecognizer];
+    UIPanGestureRecognizer *stickerPanGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(stickerPanGesture:)];
+    stickerPanGestureRecognizer.delegate = self;
+    [imgView addGestureRecognizer:stickerPanGestureRecognizer];
+
 
     // pinch
     UIPinchGestureRecognizer *stickerPinchGestureRecognizer = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(stickerPinchGesture:)];
@@ -541,7 +554,7 @@ static int const RCTVideoUnset = -1;
         [self addSubview:_playerViewController.view];
     }
 
-    NSURL *reUrl = self.urlOfCurrentlyPlayingInPlayer;
+//    NSURL *reUrl = self.urlOfCurrentlyPlayingInPlayer;
 
 }
 
