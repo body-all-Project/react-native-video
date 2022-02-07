@@ -28,6 +28,9 @@ static int const RCTVideoUnset = -1;
   AVPlayer *_player;
   AVPlayerItem *_playerItem;
   NSDictionary *_source;
+  BOOL _openTrash;
+  BOOL _isTrashMode;
+  BOOL _isScaleDown;
   BOOL _playerItemObserversSet;
   BOOL _playerBufferEmpty;
   AVPlayerLayer *_playerLayer;
@@ -87,6 +90,7 @@ static int const RCTVideoUnset = -1;
   NSDictionary * _sticker;
   BOOL _filterEnabled;
   UIViewController * _presentingViewController;
+
 #if __has_include(<react-native-video/RCTVideoCache.h>)
   RCTVideoCache * _videoCache;
 #endif
@@ -123,6 +127,10 @@ static int const RCTVideoUnset = -1;
     _pictureInPicture = false;
     _ignoreSilentSwitch = @"inherit"; // inherit, ignore, obey
     _mixWithOthers = @"inherit"; // inherit, mix, duck
+    _openTrash = false;
+    _isTrashMode = false;
+    _isScaleDown = false;
+
 #if TARGET_OS_IOS
     _restoreUserInterfaceForPIPStopCompletionHandler = NULL;
 #endif
@@ -429,6 +437,18 @@ static int const RCTVideoUnset = -1;
 
 - (void)stickerPanGesture:(UIPanGestureRecognizer *)gesture
 {
+    UIView *gestureView = gesture.view;
+    CGPoint point = [gesture translationInView:gestureView];
+
+    // react native 단에서 쓰레기 위치를 바텀 기준 7%로 잡음
+    // height은 top 기준
+    double trashBottomPosition = round(self.bounds.size.height * 0.90);
+    double trashCenterPosition = round(self.bounds.size.width / 2);
+
+    double nextXPosition = gestureView.center.x + (gestureView.transform.a * point.x);
+    double nextYPosition =gestureView.center.y + (gestureView.transform.a * point.y);
+    bool isXTrashArea = trashCenterPosition - 40 < nextXPosition && trashCenterPosition + 40 > nextXPosition;
+    bool isYTrashArea = trashBottomPosition - 40 < nextYPosition && trashBottomPosition + 40 > nextYPosition;
 
     switch (gesture.state) {
         case UIGestureRecognizerStateBegan:
@@ -436,14 +456,36 @@ static int const RCTVideoUnset = -1;
             break;
         case UIGestureRecognizerStateChanged:
         {
-//            CGPoint point = [gesture locationInView:self];
-            UIView *gestureView = gesture.view;
-            CGPoint point = [gesture translationInView:gestureView];
 
-            gestureView.center = CGPointMake(gestureView.center.x + point.x, gestureView.center.y + point.y);
+
+            if (isXTrashArea && isYTrashArea) {
+                _openTrash = true;
+                if (!_isScaleDown && _isTrashMode) {
+                    gestureView.transform = CGAffineTransformMakeScale(0.5, 0.5);
+                    _isScaleDown = true;
+                }
+            } else {
+                _openTrash = false;
+
+                if (_isScaleDown && _isTrashMode) {
+                    gestureView.transform = CGAffineTransformMakeScale(1, 1);
+                    _isScaleDown = false;
+                }
+            }
+
+            gestureView.center = CGPointMake(nextXPosition, nextYPosition);
 
             [gesture setTranslation:CGPointZero inView:gestureView];
 
+            break;
+        }
+        case UIGestureRecognizerStateEnded: {
+            if (_openTrash && _isTrashMode) {
+                [gestureView removeFromSuperview];
+            }
+
+
+            _openTrash = false;
             break;
         }
 
@@ -501,6 +543,7 @@ static int const RCTVideoUnset = -1;
     switch (gesture.state) {
         case UIGestureRecognizerStateBegan:
             if (self.onLongPressSticker) {
+                _isTrashMode = true;
                 self.onLongPressSticker(@{
                     @"isLongPress": @(YES)
                                    });
@@ -514,6 +557,7 @@ static int const RCTVideoUnset = -1;
         }
         case UIGestureRecognizerStateEnded: {
             if (self.onLongPressSticker) {
+                _isTrashMode = false;
                 self.onLongPressSticker(@{
                     @"isLongPress": @(NO)
                                    });
@@ -577,7 +621,7 @@ static int const RCTVideoUnset = -1;
     // longpress stickerLongPressGesture
     UILongPressGestureRecognizer *stickerLongPressGestureRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(stickerLongPressGesture:)];
     stickerLongPressGestureRecognizer.delegate = self;
-    stickerLongPressGestureRecognizer.minimumPressDuration = 0.7;
+    stickerLongPressGestureRecognizer.minimumPressDuration = 0.5;
     [imgView addGestureRecognizer:stickerLongPressGestureRecognizer];
 
 
