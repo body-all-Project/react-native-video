@@ -34,6 +34,12 @@ static int const RCTVideoUnset = -1;
   BOOL _isTrashMode;
   BOOL _isScaleDown;
   float _prevScale;
+  float _currentTextScale;
+  float _currentTextRotate;
+
+  UITextField* _currentText;
+  UIView* _grayBackground;
+    CGPoint _currentPoint;
 
   BOOL _playerItemObserversSet;
   BOOL _playerBufferEmpty;
@@ -95,6 +101,8 @@ static int const RCTVideoUnset = -1;
   BOOL _filterEnabled;
   UIViewController * _presentingViewController;
 
+  int * _videoEditType;
+
 #if __has_include(<react-native-video/RCTVideoCache.h>)
   RCTVideoCache * _videoCache;
 #endif
@@ -135,6 +143,10 @@ static int const RCTVideoUnset = -1;
     _isTrashMode = false;
     _isScaleDown = false;
     _prevScale = 1.0;
+    _videoEditType = 0;
+      _currentTextScale = 1;
+      _currentTextRotate = 0;
+
 
 #if TARGET_OS_IOS
     _restoreUserInterfaceForPIPStopCompletionHandler = NULL;
@@ -536,7 +548,39 @@ static int const RCTVideoUnset = -1;
 //            CGPoint point = [gesture locationInView:self];
             UIView *gestureView = gesture.view;
             gestureView.transform = CGAffineTransformRotate(gestureView.transform, gesture.rotation);
+
             gesture.rotation = 0;
+
+            break;
+        }
+
+        default:
+            break;
+    }
+}
+
+- (void)backgroundTapRecognize:(UITapGestureRecognizer *)gesture
+{
+
+    switch (gesture.state) {
+        case UIGestureRecognizerStateBegan:
+
+            break;
+        case UIGestureRecognizerStateChanged:
+        {
+            break;
+        }
+        case UIGestureRecognizerStateEnded: {
+            if (_currentText) {
+                [_currentText endEditing:YES];
+
+
+                _currentText.transform = CGAffineTransformMakeScale(_currentTextScale, _currentTextScale);
+                _currentText.transform = CGAffineTransformRotate(_currentText.transform, _currentTextRotate);
+                _currentText.center = CGPointMake(_currentPoint.x, _currentPoint.y);
+
+                [_grayBackground removeFromSuperview];
+            }
 
             break;
         }
@@ -588,6 +632,128 @@ static int const RCTVideoUnset = -1;
     return NO;
 }
 
+-(BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range  replacementString:(NSString *)string
+{
+
+    NSString *str = [textField.text stringByReplacingCharactersInRange:range withString:string];
+    if( [str length] > 15 ){
+//        textField.text = string;
+//        UIResponder* nextResponder = [textField.superview viewWithTag:(textField.tag + 1)];
+//        if (nextResponder) {
+//            [nextResponder becomeFirstResponder];
+//        }
+        return NO;
+    }
+    return YES;
+
+}
+-(void)textFieldDidEndEditing:(UITextField*)textField {
+    if (textField.tag == 1) { //first textField tag
+        //textField 1
+    }
+    else {
+       //textField 2
+    }
+
+}
+
+-(void)textFieldDidBeginEditing:(UITextField*)textField {
+    CGFloat radians = atan2f(textField.transform.b, textField.transform.a);
+    CGFloat degrees = radians * (180 / M_PI);
+
+    _currentTextScale = textField.transform.a;
+    _currentTextRotate = degrees;
+    _currentPoint = CGPointMake(textField.center.x, textField.center.y);
+
+
+    textField.transform = CGAffineTransformMakeScale(1, 1);
+    textField.transform = CGAffineTransformRotate(textField.transform, 0);
+    textField.center = CGPointMake(self.bounds.size.width / 2, (self.bounds.size.height - 30)/ 2);
+
+    if (_playerViewController) {
+
+        CGRect editModeBackgroundRect = CGRectMake(0, 0, self.bounds.size.width, self.bounds.size.height);
+        _grayBackground = [[UIView alloc] initWithFrame:editModeBackgroundRect];
+        _grayBackground.backgroundColor = [UIColor blackColor];
+        _grayBackground.alpha = 0.3;
+
+        UIViewController *viewController = [self reactViewController];
+
+        viewController.view.translatesAutoresizingMaskIntoConstraints = false;
+
+        UITapGestureRecognizer *backgroundTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(backgroundTapRecognize:)];
+        backgroundTap.delegate = self;
+        [_grayBackground addGestureRecognizer:backgroundTap];
+
+        [viewController.view addSubview:_grayBackground];
+        [viewController.view addSubview:textField];
+
+
+        [viewController addChildViewController:_playerViewController];
+
+        [self addSubview:_playerViewController.view];
+    }
+
+}
+
+- (BOOL) textFieldShouldEndEditing:(UITextField *)textField {
+    NSLog(@"Lost Focus for content: %@", textField.text);
+    return YES;
+}
+
+- (void)setVideoEditType: (NSNumber *)videoEditType {
+    // 0 = 색보정 1 = 스티커 3 = nonselect
+    if ([videoEditType intValue] == 0 || [videoEditType intValue] == 1 || [videoEditType intValue] == 3) {
+        return;
+    }
+
+    CGRect someRect = CGRectMake(self.bounds.size.width / 2 , (self.bounds.size.height - 30) / 2, 250, 150);
+    UITextField* addText = [[UITextField alloc] initWithFrame:someRect];
+
+    addText.font = [UIFont systemFontOfSize:40];
+    addText.autocorrectionType = UITextAutocorrectionTypeNo;
+    addText.textAlignment = NSTextAlignmentCenter;
+    addText.textColor = [UIColor whiteColor];
+    addText.delegate = self;
+
+    [addText becomeFirstResponder];
+
+    // pan gesture
+    UIPanGestureRecognizer *stickerPanGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(stickerPanGesture:)];
+    stickerPanGestureRecognizer.delegate = self;
+    [addText addGestureRecognizer:stickerPanGestureRecognizer];
+
+
+    // pinch
+    UIPinchGestureRecognizer *stickerPinchGestureRecognizer = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(stickerPinchGesture:)];
+    stickerPinchGestureRecognizer.delegate = self;
+    [addText addGestureRecognizer:stickerPinchGestureRecognizer];
+
+    // rotation
+    UIRotationGestureRecognizer *stickerRotationGestureRecognizer = [[UIRotationGestureRecognizer alloc] initWithTarget:self action:@selector(stickerRotationGesture:)];
+    stickerRotationGestureRecognizer.delegate = self;
+    [addText addGestureRecognizer:stickerRotationGestureRecognizer];
+
+    // longpress stickerLongPressGesture
+    UILongPressGestureRecognizer *stickerLongPressGestureRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(stickerLongPressGesture:)];
+    stickerLongPressGestureRecognizer.delegate = self;
+    stickerLongPressGestureRecognizer.minimumPressDuration = 0.5;
+    [addText addGestureRecognizer:stickerLongPressGestureRecognizer];
+
+    _currentText = addText;
+
+    if (_playerViewController) {
+        UIViewController *viewController = [self reactViewController];
+
+        viewController.view.translatesAutoresizingMaskIntoConstraints = false;
+
+        [viewController.view addSubview:addText];
+
+        [viewController addChildViewController:_playerViewController];
+
+        [self addSubview:_playerViewController.view];
+    }
+}
 
 - (void)setSticker:(NSDictionary *)sticker {
   _sticker = sticker;
@@ -608,7 +774,6 @@ static int const RCTVideoUnset = -1;
     imgView.frame = CGRectMake(150, 150, 130, 130);
     imgView.userInteractionEnabled = true;
     imgView.multipleTouchEnabled = true;
-
 
     // pan gesture
     UIPanGestureRecognizer *stickerPanGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(stickerPanGesture:)];
@@ -639,6 +804,8 @@ static int const RCTVideoUnset = -1;
         viewController.view.translatesAutoresizingMaskIntoConstraints = false;
 
         [viewController.view addSubview:imgView];
+//        [viewController.view addSubview:addText];
+
         [viewController addChildViewController:_playerViewController];
 
         [self addSubview:_playerViewController.view];

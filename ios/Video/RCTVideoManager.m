@@ -49,7 +49,7 @@ RCT_EXPORT_VIEW_PROPERTY(fullscreenOrientation, NSString);
 RCT_EXPORT_VIEW_PROPERTY(filter, NSString);
 RCT_EXPORT_VIEW_PROPERTY(filterEnabled, BOOL);
 RCT_EXPORT_VIEW_PROPERTY(colorCorrection, NSNumberArray); // 색보정 array [채도, 밝기, 대조]
-
+RCT_EXPORT_VIEW_PROPERTY(videoEditType, NSNumber); // 색보정 array [채도, 밝기, 대조]
 //RCT_EXPORT_VIEW_PROPERTY(brightness, float);
 //RCT_EXPORT_VIEW_PROPERTY(contrast, float);
 RCT_EXPORT_VIEW_PROPERTY(progressUpdateInterval, float);

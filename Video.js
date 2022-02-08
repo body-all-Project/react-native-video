@@ -561,6 +561,7 @@ Video.propTypes = {
   disableFocus: PropTypes.bool,
   controls: PropTypes.bool,
   audioOnly: PropTypes.bool,
+  videoEditType: PropTypes.number,
   currentTime: PropTypes.number,
   fullscreenAutorotate: PropTypes.bool,
   fullscreenOrientation: PropTypes.oneOf(['all', 'landscape', 'portrait']),
