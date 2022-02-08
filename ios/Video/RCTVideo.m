@@ -29,7 +29,7 @@ static int const RCTVideoUnset = -1;
   AVPlayerItem *_playerItem;
   NSDictionary *_source;
 
-
+  BOOL _isActiveText;
   BOOL _openTrash;
   BOOL _isTrashMode;
   BOOL _isScaleDown;
@@ -454,7 +454,7 @@ static int const RCTVideoUnset = -1;
 
 - (void)stickerPanGesture:(UIPanGestureRecognizer *)gesture
 {
-
+    if (_isActiveText) return;
     UIView *gestureView = gesture.view;
     CGPoint point = [gesture translationInView:gestureView];
 
@@ -516,6 +516,7 @@ static int const RCTVideoUnset = -1;
 
 - (void)stickerPinchGesture:(UIPinchGestureRecognizer *)gesture
 {
+    if (_isActiveText) return;
 
     switch (gesture.state) {
         case UIGestureRecognizerStateBegan:
@@ -538,6 +539,7 @@ static int const RCTVideoUnset = -1;
 
 - (void)stickerRotationGesture:(UIRotationGestureRecognizer *)gesture
 {
+    if (_isActiveText) return;
 
     switch (gesture.state) {
         case UIGestureRecognizerStateBegan:
@@ -546,6 +548,7 @@ static int const RCTVideoUnset = -1;
         case UIGestureRecognizerStateChanged:
         {
 //            CGPoint point = [gesture locationInView:self];
+
             UIView *gestureView = gesture.view;
             gestureView.transform = CGAffineTransformRotate(gestureView.transform, gesture.rotation);
 
@@ -574,7 +577,7 @@ static int const RCTVideoUnset = -1;
             if (_currentText) {
                 [_currentText endEditing:YES];
 
-
+                _isActiveText = false;
                 _currentText.transform = CGAffineTransformMakeScale(_currentTextScale, _currentTextScale);
                 _currentText.transform = CGAffineTransformRotate(_currentText.transform, _currentTextRotate);
                 _currentText.center = CGPointMake(_currentPoint.x, _currentPoint.y);
@@ -592,6 +595,8 @@ static int const RCTVideoUnset = -1;
 
 - (void)stickerLongPressGesture:(UILongPressGestureRecognizer *)gesture
 {
+    if (_isActiveText) return;
+
     switch (gesture.state) {
         case UIGestureRecognizerStateBegan:
             if (self.onLongPressSticker) {
@@ -658,6 +663,7 @@ static int const RCTVideoUnset = -1;
 }
 
 -(void)textFieldDidBeginEditing:(UITextField*)textField {
+    _isActiveText = true;
     CGFloat radians = atan2f(textField.transform.b, textField.transform.a);
     CGFloat degrees = radians * (180 / M_PI);
 
