@@ -707,7 +707,7 @@ static int const RCTVideoUnset = -1;
         return;
     }
 
-    CGRect someRect = CGRectMake(self.bounds.size.width / 2 , (self.bounds.size.height - 30) / 2, 250, 150);
+    CGRect someRect = CGRectMake(self.bounds.size.width / 2 , (self.bounds.size.height - 30) / 2, self.bounds.size.width , 40);
     UITextField* addText = [[UITextField alloc] initWithFrame:someRect];
 
     addText.font = [UIFont systemFontOfSize:40];
@@ -716,6 +716,7 @@ static int const RCTVideoUnset = -1;
     addText.textColor = [UIColor whiteColor];
     addText.delegate = self;
 
+    addText.center = CGPointMake(self.bounds.size.width / 2 , (self.bounds.size.height - 30) / 2);
     [addText becomeFirstResponder];
 
     // pan gesture
