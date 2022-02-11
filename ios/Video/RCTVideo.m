@@ -704,7 +704,7 @@
             textField.transform = CGAffineTransformMakeScale(1, 1);
             textField.transform = CGAffineTransformRotate(textField.transform, 0);
 //            textField.center = CGPointMake(self.bounds.size.width / 2, (self.bounds.size.height - 30)/ 2);
-            textField.center = self.center;
+            textField.center = CGPointMake(self.center.x, self.center.y - 100);
 
 //            [textField.centerYAnchor self.centerYAnchor];
             CGRect editModeBackgroundRect = CGRectMake(0, 0, self.bounds.size.width, self.bounds.size.height);
@@ -733,7 +733,7 @@
                 return;
             }
 
-            CGRect someRect = CGRectMake(self.bounds.size.width / 2 , (self.bounds.size.height - 30) / 2, self.bounds.size.width , 40);
+            CGRect someRect = CGRectMake(self.bounds.size.width / 2 , (self.bounds.size.height - 30) / 2, (self.bounds.size.width * 2) / 3 , 40);
             UITextField* addText = [[UITextField alloc] initWithFrame:someRect];
 
             addText.font = [UIFont systemFontOfSize:40];
