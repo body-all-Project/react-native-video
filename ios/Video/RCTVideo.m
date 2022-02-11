@@ -703,8 +703,8 @@
 
             textField.transform = CGAffineTransformMakeScale(1, 1);
             textField.transform = CGAffineTransformRotate(textField.transform, 0);
-            textField.center = CGPointMake(self.bounds.size.width / 2, (self.bounds.size.height - 30)/ 2);
-
+//            textField.center = CGPointMake(self.bounds.size.width / 2, (self.bounds.size.height - 30)/ 2);
+            textField.center = self.center;
 
 //            [textField.centerYAnchor self.centerYAnchor];
             CGRect editModeBackgroundRect = CGRectMake(0, 0, self.bounds.size.width, self.bounds.size.height);
