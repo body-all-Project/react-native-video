@@ -465,14 +465,12 @@
             double trashBottomPosition = round(self.bounds.size.height * 0.90);
             double trashCenterPosition = round(self.bounds.size.width / 2);
 
+
+            CGFloat scaleFactor = sqrt(fabs(gestureView.transform.a * gestureView.transform.d - gestureView.transform.b * gestureView.transform.c));
+
             CGFloat Xposition = gestureView.center.x + (gestureView.transform.a * point.x);
-            CGFloat Yposition = gestureView.center.y + (gestureView.transform.d  * point.y );
-//
-//            CGFloat cos = cosf(realDegree / 180 * M_PI);
-//            CGFloat sin = sinf(realDegree / 180 * M_PI);
-//
-//            CGFloat x2 = fabs(Xposition * cos - (self.bounds.size.height - Yposition) * sin);
-//            CGFloat y2 = Xposition * sin + (self.bounds.size.height - Yposition) * cos;
+            CGFloat Yposition = gestureView.center.y + (gestureView.transform.d   * point.y );
+
 
             double nextXPosition = Xposition;
             double nextYPosition = Yposition;
@@ -599,6 +597,7 @@
                 case UIGestureRecognizerStateEnded: {
                     if (_currentText) {
                         [_currentText endEditing:YES];
+                        _isTrashMode = false;
 
                         [_grayBackground removeFromSuperview];
                         if ([_currentText.text length] == 0 ) {
@@ -696,39 +695,30 @@
             _currentPoint = CGPointMake(textField.center.x, textField.center.y);
 
             CGFloat radians = atan2(textField.transform.b, textField.transform.a);
-            CGFloat degrees = round(radians * (180 / M_PI));
-            CGFloat realDegree = degrees >= 0 ? fabs(degrees) : 360 + degrees;
 
+            CGFloat scaleFactor = sqrt(fabs(textField.transform.a * textField.transform.d - textField.transform.b * textField.transform.c));
             _currentTextRotate = radians;
-            _currentTextScale = textField.transform.a;
+            _currentTextScale = scaleFactor;
+            _currentText = textField;
 
             textField.transform = CGAffineTransformMakeScale(1, 1);
             textField.transform = CGAffineTransformRotate(textField.transform, 0);
             textField.center = CGPointMake(self.bounds.size.width / 2, (self.bounds.size.height - 30)/ 2);
 
-            if (_playerViewController) {
 
-                CGRect editModeBackgroundRect = CGRectMake(0, 0, self.bounds.size.width, self.bounds.size.height);
-                _grayBackground = [[UIView alloc] initWithFrame:editModeBackgroundRect];
-                _grayBackground.backgroundColor = [UIColor blackColor];
-                _grayBackground.alpha = 0.3;
+//            [textField.centerYAnchor self.centerYAnchor];
+            CGRect editModeBackgroundRect = CGRectMake(0, 0, self.bounds.size.width, self.bounds.size.height);
+            _grayBackground = [[UIView alloc] initWithFrame:editModeBackgroundRect];
+            _grayBackground.backgroundColor = [UIColor blackColor];
+            _grayBackground.alpha = 0.3;
 
-                UIViewController *viewController = [self reactViewController];
+            UITapGestureRecognizer *backgroundTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(backgroundTapRecognize:)];
+            backgroundTap.delegate = self;
+            [_grayBackground addGestureRecognizer:backgroundTap];
 
-                viewController.view.translatesAutoresizingMaskIntoConstraints = false;
+            [self addSubview:_grayBackground];
+            [self addSubview:textField];
 
-                UITapGestureRecognizer *backgroundTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(backgroundTapRecognize:)];
-                backgroundTap.delegate = self;
-                [_grayBackground addGestureRecognizer:backgroundTap];
-
-                [viewController.view addSubview:_grayBackground];
-                [viewController.view addSubview:textField];
-
-
-                [viewController addChildViewController:_playerViewController];
-
-                [self addSubview:_playerViewController.view];
-            }
 
         }
 
@@ -779,17 +769,8 @@
 
             _currentText = addText;
 
-            if (_playerViewController) {
-                UIViewController *viewController = [self reactViewController];
+            [self addSubview:addText];
 
-                viewController.view.translatesAutoresizingMaskIntoConstraints = false;
-
-                [viewController.view addSubview:addText];
-
-                [viewController addChildViewController:_playerViewController];
-
-                [self addSubview:_playerViewController.view];
-            }
         }
 
         - (void)setSticker:(NSDictionary *)sticker {
