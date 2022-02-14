@@ -451,7 +451,9 @@ Video.propTypes = {
     FilterType.TRANSFER,
     FilterType.SEPIA,
   ]),
+  onBackground: PropTypes.bool,
   filterEnabled: PropTypes.bool,
+  align: PropTypes.string,
   /* Native only */
   src: PropTypes.object,
   seek: PropTypes.oneOfType([
@@ -475,6 +477,12 @@ Video.propTypes = {
   onVideoFullscreenPlayerWillDismiss: PropTypes.func,
   onVideoFullscreenPlayerDidDismiss: PropTypes.func,
 
+  textStyle: PropTypes.oneOfType([
+    PropTypes.shape({
+      isBackgroundColor: PropTypes.bool,
+      color: PropTypes.string
+    })
+  ]),
   /* Wrapper component */
   source: PropTypes.oneOfType([
     PropTypes.shape({

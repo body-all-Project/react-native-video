@@ -38,6 +38,8 @@
           float _currentTextRotate;
           float _lastRotation;
 
+          BOOL _onBackground;
+
           UITextField* _currentText;
           UIView* _grayBackground;
           CGPoint _currentPoint;
@@ -666,7 +668,9 @@
 
         -(BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range  replacementString:(NSString *)string
         {
+//            [textField sizeToFit];
 
+//            [textField layoutSubviews];
             NSString *str = [textField.text stringByReplacingCharactersInRange:range withString:string];
             if( [str length] > 15 ){
         //        textField.text = string;
@@ -733,12 +737,15 @@
                 return;
             }
 
-            CGRect someRect = CGRectMake(self.bounds.size.width / 2 , (self.bounds.size.height - 30) / 2, (self.bounds.size.width * 2) / 3 , 40);
-            UITextField* addText = [[UITextField alloc] initWithFrame:someRect];
+            CGRect someRect = CGRectMake(self.bounds.size.width / 2 , (self.bounds.size.height - 30) / 2, self.bounds.size.width * 2 / 3 , 40);
+            UITextView* addText = [[UITextField alloc] initWithFrame:someRect];
 
-            addText.font = [UIFont systemFontOfSize:40];
+//            addText.adjustsFontSizeToFitWidth = YES;
+            addText.font = [UIFont systemFontOfSize:35];
             addText.autocorrectionType = UITextAutocorrectionTypeNo;
             addText.textAlignment = NSTextAlignmentCenter;
+
+
             addText.textColor = [UIColor whiteColor];
             addText.delegate = self;
 
@@ -837,6 +844,22 @@
 
         }
 
+        - (void)setTextStyle:(NSDictionary *)textStyle {
+            if (!_currentText) return;
+
+            bool isBackgroundColor = [RCTConvert BOOL:[textStyle objectForKey:@"isBackgroundColor"]];
+            NSString *color = [RCTConvert NSString:[textStyle objectForKey:@"color"]];
+
+           UIColor *selectedColor = [self colorWithHexString: color];
+
+
+            if (isBackgroundColor) {
+                _currentText.backgroundColor = selectedColor;
+            } else {
+                _currentText.textColor = selectedColor;
+            }
+
+        }
 
         - (NSURL*) urlFilePath:(NSString*) filepath {
           if ([filepath containsString:@"file://"]) {
@@ -1520,6 +1543,54 @@
         - (void)setRepeat:(BOOL)repeat {
           _repeat = repeat;
         }
+
+        - (void)setOnBackground:(BOOL)onBackground {
+            if (!_currentText) return;
+
+//            _currentText.backgroundColor = onBackground ? [_currentText.backgroundColor colorWithAlphaComponent:1 ] : [_currentText.backgroundColor colorWithAlphaComponent:0 ];
+
+            if (onBackground) {
+                _currentText.backgroundColor = [_currentText textColor];
+                _currentText.textColor = [UIColor whiteColor];
+            } else {
+                _currentText.textColor = [_currentText backgroundColor];
+                _currentText.backgroundColor = [UIColor clearColor];
+            }
+
+//            UIColor *col = [self colorWithHexString: @"#fd7200"];
+//            _currentText.backgroundColor = col;
+            _onBackground = onBackground;
+
+        }
+
+        - (void)setAlign: (NSString*)align {
+            if (!_currentText) return;
+
+            if ([align isEqualToString: @"center"]) {
+                _currentText.textAlignment = NSTextAlignmentCenter;
+            } else if ([align isEqualToString: @"left"]) {
+                _currentText.textAlignment = NSTextAlignmentLeft;
+            } else if ([align isEqualToString: @"right"]) {
+                _currentText.textAlignment = NSTextAlignmentRight;
+            }
+        }
+
+    - (UIColor *)colorWithHexString:(NSString *)stringToConvert
+    {
+        NSString *noHashString = [stringToConvert stringByReplacingOccurrencesOfString:@"#" withString:@""]; // remove the #
+        NSScanner *scanner = [NSScanner scannerWithString:noHashString];
+        [scanner setCharactersToBeSkipped:[NSCharacterSet symbolCharacterSet]]; // remove + and $
+
+        unsigned hex;
+        if (![scanner scanHexInt:&hex]) return nil;
+        int r = (hex >> 16) & 0xFF;
+        int g = (hex >> 8) & 0xFF;
+        int b = (hex) & 0xFF;
+
+        return [UIColor colorWithRed:r / 255.0f green:g / 255.0f blue:b / 255.0f alpha:1.0f];
+    }
+
+
 
         - (void)setMediaSelectionTrackForCharacteristic:(AVMediaCharacteristic)characteristic
                                            withCriteria:(NSDictionary *)criteria
