@@ -57,6 +57,7 @@ RCT_EXPORT_VIEW_PROPERTY(videoEditType, NSNumber); // 색보정 array [채도, �
 RCT_EXPORT_VIEW_PROPERTY(progressUpdateInterval, float);
 RCT_EXPORT_VIEW_PROPERTY(restoreUserInterfaceForPIPStopCompletionHandler, BOOL);
 RCT_EXPORT_VIEW_PROPERTY(align, NSString);
+RCT_EXPORT_VIEW_PROPERTY(fontFamily, NSString);
 
 /* Should support: onLoadStart, onLoad, and onError to stay consistent with Image */
 RCT_EXPORT_VIEW_PROPERTY(onVideoLoadStart, RCTDirectEventBlock);

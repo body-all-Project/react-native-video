@@ -1547,8 +1547,6 @@
         - (void)setOnBackground:(BOOL)onBackground {
             if (!_currentText) return;
 
-//            _currentText.backgroundColor = onBackground ? [_currentText.backgroundColor colorWithAlphaComponent:1 ] : [_currentText.backgroundColor colorWithAlphaComponent:0 ];
-
             if (onBackground) {
                 _currentText.backgroundColor = [_currentText textColor];
                 _currentText.textColor = [UIColor whiteColor];
@@ -1561,6 +1559,13 @@
 //            _currentText.backgroundColor = col;
             _onBackground = onBackground;
 
+        }
+
+        - (void)setFontFamily:(NSString *)fontFamily {
+            if (!_currentText) return;
+
+            UIFont *font = [UIFont fontWithName: fontFamily size:35];
+            [_currentText setFont:font];
         }
 
         - (void)setAlign: (NSString*)align {

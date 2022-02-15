@@ -460,6 +460,7 @@ Video.propTypes = {
     PropTypes.number,
     PropTypes.object,
   ]),
+  fontFaily: PropTypes.string,
   fullscreen: PropTypes.bool,
   onVideoLoadStart: PropTypes.func,
   onVideoLoad: PropTypes.func,
