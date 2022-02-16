@@ -2208,51 +2208,53 @@
         #pragma mark - Export
 
         - (void)save:(NSDictionary *)options resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-
-          AVAsset *asset = _playerItem.asset;
-
-          if (asset != nil) {
-
-            AVAssetExportSession *exportSession = [AVAssetExportSession
-                                                   exportSessionWithAsset:asset presetName:AVAssetExportPresetHighestQuality];
-
-            if (exportSession != nil) {
-              NSString *path = nil;
-              NSArray *array = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
-              path = [self generatePathInDirectory:[[self cacheDirectoryPath] stringByAppendingPathComponent:@"Videos"]
-                                     withExtension:@".mp4"];
-              NSURL *url = [NSURL fileURLWithPath:path];
-              exportSession.outputFileType = AVFileTypeMPEG4;
-              exportSession.outputURL = url;
-              exportSession.videoComposition = _playerItem.videoComposition;
-              exportSession.shouldOptimizeForNetworkUse = true;
-              [exportSession exportAsynchronouslyWithCompletionHandler:^{
-
-                switch ([exportSession status]) {
-                  case AVAssetExportSessionStatusFailed:
-                    reject(@"ERROR_COULD_NOT_EXPORT_VIDEO", @"Could not export video", exportSession.error);
-                    break;
-                  case AVAssetExportSessionStatusCancelled:
-                    reject(@"ERROR_EXPORT_SESSION_CANCELLED", @"Export session was cancelled", exportSession.error);
-                    break;
-                  default:
-                    resolve(@{@"uri": url.absoluteString});
-                    break;
-                }
-
-              }];
-
-            } else {
-
-              reject(@"ERROR_COULD_NOT_CREATE_EXPORT_SESSION", @"Could not create export session", nil);
-
-            }
-
-          } else {
-
-            reject(@"ERROR_ASSET_NIL", @"Asset is nil", nil);
-
-          }
+          NSURL *reUrl = self.urlOfCurrentlyPlayingInPlayer;
+            resolve(@{@"uri": reUrl.absoluteString});
+//          AVAsset *asset = _playerItem.asset;
+//
+//          if (asset != nil) {
+//
+//            AVAssetExportSession *exportSession = [AVAssetExportSession
+//                                                   exportSessionWithAsset:asset presetName:AVAssetExportPresetHighestQuality];
+//
+//            if (exportSession != nil) {
+//              NSString *path = nil;
+//              NSArray *array = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
+//              path = [self generatePathInDirectory:[[self cacheDirectoryPath] stringByAppendingPathComponent:@"Videos"]
+//                                     withExtension:@".mp4"];
+//              NSURL *url = [NSURL fileURLWithPath:path];
+//              exportSession.outputFileType = AVFileTypeMPEG4;
+//              exportSession.outputURL = url;
+//              exportSession.videoComposition = _playerItem.videoComposition;
+//              exportSession.shouldOptimizeForNetworkUse = true;
+//              [exportSession exportAsynchronouslyWithCompletionHandler:^{
+//
+//                switch ([exportSession status]) {
+//                  case AVAssetExportSessionStatusFailed:
+//                    reject(@"ERROR_COULD_NOT_EXPORT_VIDEO", @"Could not export video", exportSession.error);
+//                    break;
+//                  case AVAssetExportSessionStatusCancelled:
+//                    reject(@"ERROR_EXPORT_SESSION_CANCELLED", @"Export session was cancelled", exportSession.error);
+//                    break;
+//                  default:
+////                    resolve(@{@"uri": url.absoluteString});
+//
+//                    break;
+//                }
+//
+//              }];
+//
+//            } else {
+//
+//              reject(@"ERROR_COULD_NOT_CREATE_EXPORT_SESSION", @"Could not create export session", nil);
+//
+//            }
+//
+//          } else {
+//
+//            reject(@"ERROR_ASSET_NIL", @"Asset is nil", nil);
+//
+//          }
         }
 
         - (void)setLicenseResult:(NSString *)license {
