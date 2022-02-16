@@ -98,6 +98,7 @@ RCT_REMAP_METHOD(save,
         }
     }];
 };
+
 RCT_REMAP_METHOD(setLicenseResult,
          license:(NSString *)license
          reactTag:(nonnull NSNumber *)reactTag)

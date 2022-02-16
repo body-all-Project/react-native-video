@@ -263,6 +263,7 @@ _onGetLicense = (event) => {
     }
   }
 }
+
 getViewManagerConfig = viewManagerName => {
   if (!NativeModules.UIManager.getViewManagerConfig) {
     return NativeModules.UIManager[viewManagerName];
@@ -408,6 +409,7 @@ render() {
     onAudioFocusChanged: this._onAudioFocusChanged,
     onAudioBecomingNoisy: this._onAudioBecomingNoisy,
     onGetLicense: nativeProps.drm && nativeProps.drm.getLicense && this._onGetLicense,
+    save: this.save,
     onPictureInPictureStatusChanged: this._onPictureInPictureStatusChanged,
     onRestoreUserInterfaceForPictureInPictureStop: this._onRestoreUserInterfaceForPictureInPictureStop,
   });
@@ -585,6 +587,7 @@ Video.propTypes = {
   onProgress: PropTypes.func,
   onBandwidthUpdate: PropTypes.func,
   onSeek: PropTypes.func,
+  saveUrl: PropTypes.func,
   onEnd: PropTypes.func,
   onFullscreenPlayerWillPresent: PropTypes.func,
   onFullscreenPlayerDidPresent: PropTypes.func,
