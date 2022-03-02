@@ -461,7 +461,7 @@ static int const RCTVideoUnset = -1;
     if (_isActiveText) return;
     UIView *gestureView = gesture.view;
 
-    CGPoint point = [gesture translationInView:gestureView];
+    CGPoint point = [gesture translationInView:[gestureView superview]];
 
     // react native 단에서 쓰레기 위치를 바텀 기준 10%로 잡음
     // height은 top 기준
@@ -471,8 +471,8 @@ static int const RCTVideoUnset = -1;
 
     CGFloat scaleFactor = sqrt(fabs(gestureView.transform.a * gestureView.transform.d - gestureView.transform.b * gestureView.transform.c));
 
-    CGFloat Xposition = gestureView.center.x + (gestureView.transform.a * point.x);
-    CGFloat Yposition = gestureView.center.y + (gestureView.transform.d   * point.y );
+    CGFloat Xposition = gestureView.center.x + ( point.x);
+    CGFloat Yposition = gestureView.center.y + (point.y );
 
 
     double nextXPosition = Xposition;
@@ -804,22 +804,11 @@ static int const RCTVideoUnset = -1;
     imgView.userInteractionEnabled = true;
     imgView.multipleTouchEnabled = true;
 
-//            if( !_playerViewController )
-//            {
-//
-//                _playerViewController = [self createPlayerViewController:_player withPlayerItem:_playerItem];
-//
-//
-//                [self setResizeMode:_resizeMode];
-//
-//        }
-
 
     // rotation
     UIRotationGestureRecognizer *stickerRotationGestureRecognizer = [[UIRotationGestureRecognizer alloc] initWithTarget:self action:@selector(itemRotationGesture:)];
     stickerRotationGestureRecognizer.delegate = self;
     [imgView addGestureRecognizer:stickerRotationGestureRecognizer];
-//            _playerViewController.contentOverlayView.gestureRecognizers = stickerRotationGestureRecognizer;
 
 
     // pan gesture
@@ -828,13 +817,11 @@ static int const RCTVideoUnset = -1;
     [stickerPanGestureRecognizer setMaximumNumberOfTouches:1];
     stickerPanGestureRecognizer.delegate = self;
     [imgView addGestureRecognizer:stickerPanGestureRecognizer];
-//            _playerViewController.contentOverlayView.gestureRecognizers = stickerPanGestureRecognizer;
 
     // pinch
     UIPinchGestureRecognizer *stickerPinchGestureRecognizer = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(itemPinchGesture:)];
     stickerPinchGestureRecognizer.delegate = self;
     [imgView addGestureRecognizer:stickerPinchGestureRecognizer];
-//            _playerViewController.contentOverlayView.gestureRecognizers = stickerPinchGestureRecognizer;
 
     // longpress stickerLongPressGesture
     UILongPressGestureRecognizer *stickerLongPressGestureRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(itemLongPressGesture:)];
@@ -843,9 +830,6 @@ static int const RCTVideoUnset = -1;
     [imgView addGestureRecognizer:stickerLongPressGestureRecognizer];
 
     [self addSubview:imgView];
-
-
-
 
 }
 
