@@ -106,6 +106,7 @@ static int const RCTVideoUnset = -1;
 
   int * _videoEditType;
 
+  CIFilter *colorControlsFilter;
 #if __has_include(<react-native-video/RCTVideoCache.h>)
   RCTVideoCache * _videoCache;
 #endif
@@ -444,11 +445,45 @@ static int const RCTVideoUnset = -1;
                                 });
 
 
-
+          [self setColorDefault];
       }
     }];
   });
+
+
   _videoLoadStarted = YES;
+}
+
+- (void)setColorDefault {
+
+    if (!_playerItem.asset) {
+      return;
+    }
+
+    colorControlsFilter = [CIFilter filterWithName:@"CIColorControls"];
+
+    [colorControlsFilter setDefaults];
+    [colorControlsFilter setValue:[NSNumber numberWithFloat:1.00] forKey:@"inputSaturation"];
+    [colorControlsFilter setValue:[NSNumber numberWithFloat:0.00] forKey:@"inputBrightness"];
+    [colorControlsFilter setValue:[NSNumber numberWithFloat:1.00] forKey:@"inputContrast"];
+
+    _playerItem.videoComposition = [AVVideoComposition
+                                    videoCompositionWithAsset:_playerItem.asset
+                                    applyingCIFiltersWithHandler:^(AVAsynchronousCIImageFilteringRequest *_Nonnull request) {
+                                      if (self->colorControlsFilter == nil) {
+                                      } else {
+                                          CIImage *image = request.sourceImage.imageByClampingToExtent;
+
+                                          [self->colorControlsFilter setValue:image forKey:kCIInputImageKey];
+
+                                          CIImage *outputImage = [self->colorControlsFilter.outputImage imageByCroppingToRect:request.sourceImage.extent];
+                                          [request finishWithImage:outputImage context:nil];
+
+                                      }
+                                    }
+
+    ];
+
 }
 
 
@@ -2044,6 +2079,7 @@ return [UIColor colorWithRed:r / 255.0f green:g / 255.0f blue:b / 255.0f alpha:1
 
 }
 
+
 - (void)setColorCorrection:(NSArray *)colorCorrection {
     _colorCorrection = colorCorrection;
 
@@ -2051,36 +2087,14 @@ return [UIColor colorWithRed:r / 255.0f green:g / 255.0f blue:b / 255.0f alpha:1
       return;
     }
 
-        float saturation = [colorCorrection[0] floatValue];
-        float brightness = [colorCorrection[1] floatValue];
-        float contrast = [colorCorrection[2] floatValue];
-
-        CIFilter *colorControlsFilter = [CIFilter filterWithName:@"CIColorControls"];
-        _playerItem.videoComposition = [AVVideoComposition
-                                        videoCompositionWithAsset:_playerItem.asset
-                                        applyingCIFiltersWithHandler:^(AVAsynchronousCIImageFilteringRequest *_Nonnull request) {
-                                          if (colorControlsFilter == nil) {
-    //                                        [request finishWithImage:request.sourceImage context:nil];
-                                          } else {
-                                              CIImage *image = request.sourceImage.imageByClampingToExtent;
-
-                                              [colorControlsFilter setDefaults];
-                                              [colorControlsFilter setValue:image forKey:@"inputImage"];
-                                              [colorControlsFilter setValue:[NSNumber numberWithFloat: saturation] forKey:@"inputSaturation"];
-                                              [colorControlsFilter setValue:[NSNumber numberWithFloat: brightness] forKey:@"inputBrightness"];
-                                              [colorControlsFilter setValue:[NSNumber numberWithFloat: contrast] forKey:@"inputContrast"];
-
-                                              CIImage *outputImage = [colorControlsFilter.outputImage imageByCroppingToRect:request.sourceImage.extent];
-                                              [request finishWithImage:outputImage context:nil];
-
-                                          }
-                                        }
-
-        ];
+    float saturation = [colorCorrection[0] floatValue];
+    float brightness = [colorCorrection[1] floatValue];
+    float contrast = [colorCorrection[2] floatValue];
 
 
-
-
+    [colorControlsFilter setValue:[NSNumber numberWithFloat:saturation] forKey:@"inputSaturation"];
+    [colorControlsFilter setValue:[NSNumber numberWithFloat:brightness] forKey:@"inputBrightness"];
+    [colorControlsFilter setValue:[NSNumber numberWithFloat:contrast] forKey:@"inputContrast"];
 }
 
 // TODO : 비디어에 빈레이어 주고 빈레이어에 대해 필터링을 한다. -> 비디오의 버벅거림 버그 방지 : 어느정도 예측임 시도해볼것.
@@ -2219,6 +2233,9 @@ return [UIColor colorWithRed:r / 255.0f green:g / 255.0f blue:b / 255.0f alpha:1
     UIImage *mergedImage = [self imageWithView:mergeView];
 
     CIImage *ciImage = [CIImage imageWithCGImage:mergedImage.CGImage];
+    float saturation = [[colorControlsFilter valueForKey:@"inputSaturation"] floatValue];
+    float brightness = [[colorControlsFilter valueForKey:@"inputBrightness"] floatValue];
+    float contrast = [[colorControlsFilter valueForKey:@"inputContrast"] floatValue];
 
     _playerItem.videoComposition = [AVVideoComposition
                                     videoCompositionWithAsset:_playerItem.asset
@@ -2227,19 +2244,29 @@ return [UIColor colorWithRed:r / 255.0f green:g / 255.0f blue:b / 255.0f alpha:1
 //                                        [request finishWithImage:request.sourceImage context:nil];
                                       } else {
                                           CIImage *image = request.sourceImage.imageByClampingToExtent;
+                                          [self->colorControlsFilter setValue:image forKey:kCIInputImageKey];
+                                          [self->colorControlsFilter setValue:[NSNumber numberWithFloat:saturation] forKey:@"inputSaturation"];
+                                          [self->colorControlsFilter setValue:[NSNumber numberWithFloat:brightness] forKey:@"inputBrightness"];
+                                          [self->colorControlsFilter setValue:[NSNumber numberWithFloat:contrast] forKey:@"inputContrast"];
+
+                                          CIImage *outputImage = [self->colorControlsFilter.outputImage imageByCroppingToRect:request.sourceImage.extent];
 
                                           [filter setDefaults];
-                                          [filter setValue:image forKey:@"inputBackgroundImage"];
+                                          [filter setValue:outputImage forKey:@"inputBackgroundImage"];
                                           [filter setValue:ciImage forKey:@"inputImage"];
 
                                           CGAffineTransform scale = CGAffineTransformScale(mergeView.transform, 0.5, 0.5);
                                           CGAffineTransform translate = CGAffineTransformTranslate(mergeView.transform, 67,7);
 
 
-                                          [filter setValue:[ciImage imageByApplyingTransform:CGAffineTransformConcat(scale, translate)] forKey:kCIInputImageKey];
+                                          [filter setValue:[ciImage imageByApplyingTransform:CGAffineTransformConcat(scale, translate)]
+                                                forKey:kCIInputImageKey];
 
 
-                                          CIImage *outputImage = [filter.outputImage imageByCroppingToRect:request.sourceImage.extent];
+
+                                          outputImage = [filter.outputImage imageByCroppingToRect:request.sourceImage.extent];
+
+
 
                                           [request finishWithImage:outputImage context:nil];
 
@@ -2249,8 +2276,6 @@ return [UIColor colorWithRed:r / 255.0f green:g / 255.0f blue:b / 255.0f alpha:1
     ];
 
 }
-
-
 
 #pragma mark - Export
 
