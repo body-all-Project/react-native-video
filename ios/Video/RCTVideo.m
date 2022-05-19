@@ -81,6 +81,7 @@ static int const RCTVideoUnset = -1;
   BOOL _muted;
   BOOL _paused;
   BOOL _repeat;
+  BOOL _isPlayerRole;
   BOOL _allowsExternalPlayback;
   NSArray * _textTracks;
   NSDictionary * _selectedTextTrack;
@@ -390,6 +391,7 @@ static int const RCTVideoUnset = -1;
 
 - (void)setSrc:(NSDictionary *)source
 {
+  [self setIsPlayerRole:_isPlayerRole];
   _source = source;
   [self removePlayerLayer];
   [self removePlayerTimeObserver];
@@ -402,8 +404,11 @@ static int const RCTVideoUnset = -1;
       _playerItem = playerItem;
       [self setPreferredForwardBufferDuration:_preferredForwardBufferDuration];
       [self addPlayerItemObservers];
-      [self setFilter:self->_filterName];
-      [self setColorCorrection:self->_colorCorrection];
+        if (!_isPlayerRole) {
+            [self setFilter:self->_filterName];
+            [self setColorCorrection:self->_colorCorrection];
+        }
+
       [self setMaxBitRate:self->_maxBitRate];
 
       [_player pause];
@@ -445,7 +450,10 @@ static int const RCTVideoUnset = -1;
                                 });
 
 
-          [self setColorDefault];
+          if (!_isPlayerRole) {
+              [self setColorDefault];
+          }
+
       }
     }];
   });
@@ -1571,6 +1579,10 @@ static int const RCTVideoUnset = -1;
   _repeat = repeat;
 }
 
+- (void)setIsPlayerRole:(BOOL)isPlayerRole {
+    _isPlayerRole = isPlayerRole;
+}
+
 - (void)setOnBackground:(BOOL)onBackground {
     if (!_currentText) return;
 
@@ -2085,6 +2097,10 @@ return [UIColor colorWithRed:r / 255.0f green:g / 255.0f blue:b / 255.0f alpha:1
 
     if (!_playerItem.asset) {
       return;
+    }
+
+    if (!_isPlayerRole) {
+        return;
     }
 
     float saturation = [colorCorrection[0] floatValue];
