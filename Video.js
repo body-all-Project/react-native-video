@@ -306,7 +306,6 @@ getViewManagerConfig = viewManagerName => {
 // }
 
 setSticker = () => {
-  console.log('this.props.sticker', this.props.sticker)
   if(!this.props.sticker) return undefined;
 
   const sticker = resolveAssetSource(this.props.sticker) || {}
