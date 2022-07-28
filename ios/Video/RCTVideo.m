@@ -1308,9 +1308,15 @@ static int const RCTVideoUnset = -1;
   }
 
   if (_repeat) {
+//      @available(iOS 12.0, *)
     AVPlayerItem *item = [notification object];
-    [item seekToTime:kCMTimeZero];
-    [self applyModifiers];
+      [item seekToTime:kCMTimeZero toleranceBefore:kCMTimeZero toleranceAfter:kCMTimeZero completionHandler:^(BOOL finished){
+          if (finished) {
+              [self applyModifiers];
+          }
+      }];
+
+
   } else {
     [self removePlayerTimeObserver];
   }
