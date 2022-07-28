@@ -2021,6 +2021,10 @@ return [UIColor colorWithRed:r / 255.0f green:g / 255.0f blue:b / 255.0f alpha:1
   if (_loadingRequest != nil) {
     [_loadingRequest finishLoading];
   }
+    if (colorControlsFilter != nil) {
+        colorControlsFilter = nil;
+    }
+
   _requestingCertificate = NO;
   _requestingCertificateErrored = NO;
   [_playerLayer removeFromSuperlayer];
@@ -2061,6 +2065,11 @@ return [UIColor colorWithRed:r / 255.0f green:g / 255.0f blue:b / 255.0f alpha:1
 }
 
 - (void)setFilter:(NSString *)filterName {
+
+    if (_isPlayerRole) {
+        return;
+    }
+
   _filterName = filterName;
   // test
   if (!_filterEnabled) {
@@ -2099,7 +2108,7 @@ return [UIColor colorWithRed:r / 255.0f green:g / 255.0f blue:b / 255.0f alpha:1
       return;
     }
 
-    if (!_isPlayerRole) {
+    if (_isPlayerRole) {
         return;
     }
 
@@ -2113,22 +2122,6 @@ return [UIColor colorWithRed:r / 255.0f green:g / 255.0f blue:b / 255.0f alpha:1
     [colorControlsFilter setValue:[NSNumber numberWithFloat:contrast] forKey:@"inputContrast"];
 }
 
-// TODO : 비디어에 빈레이어 주고 빈레이어에 대해 필터링을 한다. -> 비디오의 버벅거림 버그 방지 : 어느정도 예측임 시도해볼것.
-
-- (void)setEmptyLayer {
-    CALayer * aLayer       = [CALayer layer];
-    aLayer.frame           = CGRectMake((100)+100, (100)+100, 120, 120);
-    aLayer.backgroundColor = [UIColor redColor].CGColor;
-
-//    AVSynchronizedLayer * synchronizedLayer =
-//      [AVSynchronizedLayer synchronizedLayerWithPlayerItem:_playerItem];
-//
-//    synchronizedLayer.frame = [UIScreen mainScreen].bounds;
-//
-//    [synchronizedLayer addSublayer:aLayer];
-//
-//    [_playerLayer insertSublayer:synchronizedLayer above:_playerLayer];
-}
 
 
 - (void)setFilterEnabled:(BOOL)filterEnabled {
