@@ -136,17 +136,17 @@ static int const RCTVideoUnset = -1;
     _progressUpdateInterval = 250;
     _controls = NO;
     _playerBufferEmpty = YES;
-    _playInBackground = false;
-    _preventsDisplaySleepDuringVideoPlayback = true;
+    _playInBackground = NO;
+    _preventsDisplaySleepDuringVideoPlayback = YES;
     _preferredForwardBufferDuration = 0.0f;
     _allowsExternalPlayback = YES;
-    _playWhenInactive = false;
-    _pictureInPicture = false;
+    _playWhenInactive = NO;
+    _pictureInPicture = NO;
     _ignoreSilentSwitch = @"inherit"; // inherit, ignore, obey
     _mixWithOthers = @"inherit"; // inherit, mix, duck
-    _openTrash = false;
-    _isTrashMode = false;
-    _isScaleDown = false;
+    _openTrash = NO;
+    _isTrashMode = NO;
+    _isScaleDown = NO;
     _prevScale = 1.0;
     _videoEditType = 0;
       _currentTextScale = 1;
@@ -512,7 +512,7 @@ static int const RCTVideoUnset = -1;
     double trashCenterPosition = round(self.bounds.size.width / 2);
 
 
-    CGFloat scaleFactor = sqrt(fabs(gestureView.transform.a * gestureView.transform.d - gestureView.transform.b * gestureView.transform.c));
+//    CGFloat scaleFactor = sqrt(fabs(gestureView.transform.a * gestureView.transform.d - gestureView.transform.b * gestureView.transform.c));
 
     CGFloat Xposition = gestureView.center.x + ( point.x);
     CGFloat Yposition = gestureView.center.y + (point.y );
@@ -536,18 +536,18 @@ static int const RCTVideoUnset = -1;
         case UIGestureRecognizerStateChanged:
         {
             if (isXTrashArea && isYTrashArea) {
-                _openTrash = true;
+                _openTrash = YES;
                 if (!_isScaleDown && _isTrashMode) {
                     _prevScale = gestureView.transform.a;
                     gestureView.transform = CGAffineTransformMakeScale(0.5, 0.5);
-                    _isScaleDown = true;
+                    _isScaleDown = YES;
                 }
             } else {
-                _openTrash = false;
+                _openTrash = NO;
 
                 if (_isScaleDown && _isTrashMode) {
                     gestureView.transform = CGAffineTransformMakeScale(_prevScale, _prevScale);
-                    _isScaleDown = false;
+                    _isScaleDown = NO;
                 }
             }
 
@@ -560,10 +560,12 @@ static int const RCTVideoUnset = -1;
         case UIGestureRecognizerStateEnded: {
             if (_openTrash && _isTrashMode) {
                 [gestureView removeFromSuperview];
+                _isTrashMode = NO;
             }
 
 
-            _openTrash = false;
+            _openTrash = NO;
+            _isScaleDown = NO;
             break;
         }
 
@@ -827,6 +829,7 @@ static int const RCTVideoUnset = -1;
 - (void)setSticker:(NSDictionary *)sticker {
   _sticker = sticker;
     if (!_playerItem.asset) return;
+    if (!sticker) return;
 
     bool isNetwork = [RCTConvert BOOL:[sticker objectForKey:@"isNetwork"]];
     bool isAsset = [RCTConvert BOOL:[sticker objectForKey:@"isAsset"]];
