@@ -479,13 +479,17 @@ static int const RCTVideoUnset = -1;
                                     videoCompositionWithAsset:_playerItem.asset
                                     applyingCIFiltersWithHandler:^(AVAsynchronousCIImageFilteringRequest *_Nonnull request) {
                                       if (self->colorControlsFilter == nil) {
+                                          [request finishWithImage:request.sourceImage context:nil];
                                       } else {
                                           CIImage *image = request.sourceImage.imageByClampingToExtent;
 
                                           [self->colorControlsFilter setValue:image forKey:kCIInputImageKey];
 
                                           CIImage *outputImage = [self->colorControlsFilter.outputImage imageByCroppingToRect:request.sourceImage.extent];
-                                          [request finishWithImage:outputImage context:nil];
+                                          if (outputImage != nil) {
+                                              [request finishWithImage:outputImage context:nil];
+                                          }
+
 
                                       }
                                     }
@@ -2099,7 +2103,10 @@ return [UIColor colorWithRed:r / 255.0f green:g / 255.0f blue:b / 255.0f alpha:1
                                       CIImage *image = request.sourceImage.imageByClampingToExtent;
                                       [filter setValue:image forKey:kCIInputImageKey];
                                       CIImage *output = [filter.outputImage imageByCroppingToRect:request.sourceImage.extent];
-                                      [request finishWithImage:output context:nil];
+                                        if (output != nil) {
+                                            [request finishWithImage:output context:nil];
+                                        }
+
                                     }
                                   }];
 
@@ -2255,11 +2262,14 @@ return [UIColor colorWithRed:r / 255.0f green:g / 255.0f blue:b / 255.0f alpha:1
     float brightness = [[colorControlsFilter valueForKey:@"inputBrightness"] floatValue];
     float contrast = [[colorControlsFilter valueForKey:@"inputContrast"] floatValue];
 
+    CGAffineTransform scale = CGAffineTransformScale(mergeView.transform, 0.5, 0.5);
+    CGAffineTransform translate = CGAffineTransformTranslate(mergeView.transform, 67,7);
+
     _playerItem.videoComposition = [AVVideoComposition
                                     videoCompositionWithAsset:_playerItem.asset
                                     applyingCIFiltersWithHandler:^(AVAsynchronousCIImageFilteringRequest *_Nonnull request) {
                                       if (filter == nil) {
-//                                        [request finishWithImage:request.sourceImage context:nil];
+                                        [request finishWithImage:request.sourceImage context:nil];
                                       } else {
                                           CIImage *image = request.sourceImage.imageByClampingToExtent;
                                           [self->colorControlsFilter setValue:image forKey:kCIInputImageKey];
@@ -2273,25 +2283,23 @@ return [UIColor colorWithRed:r / 255.0f green:g / 255.0f blue:b / 255.0f alpha:1
                                           [filter setValue:outputImage forKey:@"inputBackgroundImage"];
                                           [filter setValue:ciImage forKey:@"inputImage"];
 
-                                          CGAffineTransform scale = CGAffineTransformScale(mergeView.transform, 0.5, 0.5);
-                                          CGAffineTransform translate = CGAffineTransformTranslate(mergeView.transform, 67,7);
-
 
                                           [filter setValue:[ciImage imageByApplyingTransform:CGAffineTransformConcat(scale, translate)]
                                                 forKey:kCIInputImageKey];
 
-
-
                                           outputImage = [filter.outputImage imageByCroppingToRect:request.sourceImage.extent];
 
 
+                                          if (outputImage != nil)  {
+                                              [request finishWithImage:outputImage context:nil];
+                                          }
 
-                                          [request finishWithImage:outputImage context:nil];
 
                                       }
                                     }
-//
+
     ];
+
 
 }
 
@@ -2323,7 +2331,7 @@ return [UIColor colorWithRed:r / 255.0f green:g / 255.0f blue:b / 255.0f alpha:1
 
     if (exportSession != nil) {
       NSString *path = nil;
-      NSArray *array = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
+//      NSArray *array = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
       path = [self generatePathInDirectory:[[self cacheDirectoryPath] stringByAppendingPathComponent:@"Videos"]
                              withExtension:@".mp4"];
       NSURL *url = [NSURL fileURLWithPath:path];
@@ -2359,6 +2367,7 @@ return [UIColor colorWithRed:r / 255.0f green:g / 255.0f blue:b / 255.0f alpha:1
     reject(@"ERROR_ASSET_NIL", @"Asset is nil", nil);
 
   }
+
 }
 
 - (void)setLicenseResult:(NSString *)license {
