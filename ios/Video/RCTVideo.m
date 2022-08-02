@@ -788,7 +788,7 @@ static int const RCTVideoUnset = -1;
     }
 
     CGRect someRect = CGRectMake(self.bounds.size.width / 2 , (self.bounds.size.height - 30) / 2, self.bounds.size.width * 2 / 3 , 40);
-    UITextView* addText = [[UITextField alloc] initWithFrame:someRect];
+    UITextField* addText = [[UITextField alloc] initWithFrame:someRect];
 
 //            addText.adjustsFontSizeToFitWidth = YES;
     addText.font = [UIFont systemFontOfSize:35];
@@ -1616,7 +1616,15 @@ static int const RCTVideoUnset = -1;
 - (void)setFontFamily:(NSString *)fontFamily {
     if (!_currentText) return;
 
+//    for (NSString *familyName in [UIFont familyNames]){
+//        NSLog(@"Family name: %@", familyName);
+//        for (NSString *fontName in [UIFont fontNamesForFamilyName:familyName]) {
+//            NSLog(@"--Font name: %@", fontName);
+//        }
+//    }
+
     UIFont *font = [UIFont fontWithName: fontFamily size:35];
+    if (font == nil) return;
     [_currentText setFont:font];
 }
 
