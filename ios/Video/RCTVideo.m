@@ -512,8 +512,8 @@ static int const RCTVideoUnset = -1;
 
     // react native 단에서 쓰레기 위치를 바텀 기준 10%로 잡음
     // height은 top 기준
-    double trashBottomPosition = round(self.bounds.size.height * 0.90);
-    double trashCenterPosition = round(self.bounds.size.width / 2);
+    double trashBottomPosition = round(self.bounds.size.height * 0.85);
+//    double trashCenterPosition = round(self.bounds.size.width / 2);
 
 
 //    CGFloat scaleFactor = sqrt(fabs(gestureView.transform.a * gestureView.transform.d - gestureView.transform.b * gestureView.transform.c));
@@ -524,7 +524,7 @@ static int const RCTVideoUnset = -1;
 
     double nextXPosition = Xposition;
     double nextYPosition = Yposition;
-    bool isXTrashArea = trashCenterPosition - 40 < nextXPosition && trashCenterPosition + 40 > nextXPosition;
+//    bool isXTrashArea = trashCenterPosition - 40 < nextXPosition && trashCenterPosition + 40 > nextXPosition;
     bool isYTrashArea = trashBottomPosition - 40 < nextYPosition && trashBottomPosition + 40 > nextYPosition;
 
 
@@ -539,7 +539,9 @@ static int const RCTVideoUnset = -1;
         }
         case UIGestureRecognizerStateChanged:
         {
-            if (isXTrashArea && isYTrashArea) {
+//            if (isXTrashArea && isYTrashArea)
+            if (isYTrashArea)
+            {
                 _openTrash = YES;
                 if (!_isScaleDown && _isTrashMode) {
                     _prevScale = gestureView.transform.a;
