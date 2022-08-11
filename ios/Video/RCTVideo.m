@@ -525,7 +525,7 @@ static int const RCTVideoUnset = -1;
     double nextXPosition = Xposition;
     double nextYPosition = Yposition;
 //    bool isXTrashArea = trashCenterPosition - 40 < nextXPosition && trashCenterPosition + 40 > nextXPosition;
-    bool isYTrashArea = trashBottomPosition - 40 < nextYPosition && trashBottomPosition + 40 > nextYPosition;
+    bool isYTrashArea = trashBottomPosition < nextYPosition;
 
 
     switch (gesture.state) {
