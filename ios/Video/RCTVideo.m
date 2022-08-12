@@ -789,11 +789,11 @@ static int const RCTVideoUnset = -1;
         return;
     }
 
-    CGRect someRect = CGRectMake(self.bounds.size.width / 2 , (self.bounds.size.height - 30) / 2, self.bounds.size.width * 2 / 3 , 40);
+    CGRect someRect = CGRectMake(self.bounds.size.width / 2 , (self.bounds.size.height - 30) / 2, self.bounds.size.width * 2.5 / 3 , 40);
     UITextField* addText = [[UITextField alloc] initWithFrame:someRect];
 
 //            addText.adjustsFontSizeToFitWidth = YES;
-    addText.font = [UIFont systemFontOfSize:35];
+    addText.font = [UIFont systemFontOfSize:25];
     addText.autocorrectionType = UITextAutocorrectionTypeNo;
     addText.textAlignment = NSTextAlignmentCenter;
 
