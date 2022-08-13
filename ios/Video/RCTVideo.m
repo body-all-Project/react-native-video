@@ -2272,6 +2272,8 @@ return [UIColor colorWithRed:r / 255.0f green:g / 255.0f blue:b / 255.0f alpha:1
     float brightness = [[colorControlsFilter valueForKey:@"inputBrightness"] floatValue];
     float contrast = [[colorControlsFilter valueForKey:@"inputContrast"] floatValue];
 
+
+    bool isIPhone8Width = self.frame.size.width <= 375;
     CGAffineTransform scale = CGAffineTransformScale(mergeView.transform, 0.5, 0.5);
     CGAffineTransform translate = CGAffineTransformTranslate(mergeView.transform, 67,7);
 
@@ -2294,8 +2296,11 @@ return [UIColor colorWithRed:r / 255.0f green:g / 255.0f blue:b / 255.0f alpha:1
                                           [filter setValue:ciImage forKey:@"inputImage"];
 
 
-                                          [filter setValue:[ciImage imageByApplyingTransform:CGAffineTransformConcat(scale, translate)]
-                                                forKey:kCIInputImageKey];
+                                          if (!isIPhone8Width) {
+                                              [filter setValue:[ciImage imageByApplyingTransform:CGAffineTransformConcat(scale, translate)]
+                                                    forKey:kCIInputImageKey];
+                                          }
+
 
                                           outputImage = [filter.outputImage imageByCroppingToRect:request.sourceImage.extent];
 
@@ -2316,7 +2321,6 @@ return [UIColor colorWithRed:r / 255.0f green:g / 255.0f blue:b / 255.0f alpha:1
 #pragma mark - Export
 
 - (void)save:(NSDictionary *)options resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-
 
 
     CGRect mergedRect = CGRectMake(0, 0, self.frame.size.width, self.frame.size.height);
