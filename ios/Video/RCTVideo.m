@@ -2273,7 +2273,7 @@ return [UIColor colorWithRed:r / 255.0f green:g / 255.0f blue:b / 255.0f alpha:1
     float contrast = [[colorControlsFilter valueForKey:@"inputContrast"] floatValue];
 
 
-    bool isIPhone8Width = self.frame.size.width <= 375;
+    bool isIPhone8Width = self.frame.size.width <= 375 && self.frame.size.height <= 667;
     CGAffineTransform scale = CGAffineTransformScale(mergeView.transform, 0.5, 0.5);
     CGAffineTransform translate = CGAffineTransformTranslate(mergeView.transform, 67,7);
 
