@@ -2273,13 +2273,17 @@ return [UIColor colorWithRed:r / 255.0f green:g / 255.0f blue:b / 255.0f alpha:1
     float contrast = [[colorControlsFilter valueForKey:@"inputContrast"] floatValue];
 
     int ratioHeight = round((self.frame.size.width * 16) / 9);
-    int xOffset = self.frame.size.width - (self.frame.size.width * 0.85);
-    int yOffset = ratioHeight - ratioHeight * 0.85;
+    float xOffset = self.frame.size.width - (self.frame.size.width * 0.85);
+    float yOffset = ratioHeight - ratioHeight * 0.85;
 
 
     bool isIPhone8Width = self.frame.size.width <= 375 && self.frame.size.height <= 667;
-    CGAffineTransform scale = CGAffineTransformScale(mergeView.transform, 0.85, 0.85);
-    CGAffineTransform translate = CGAffineTransformTranslate(mergeView.transform, xOffset + 10, yOffset * 2 + 10);
+    float viewRatioScale = isIPhone8Width ? 1.44 : 0.85;
+    int ratioTranslateX = isIPhone8Width ? 5 : (xOffset + 10);
+    int ratioTranslateY = isIPhone8Width ? 0 : (yOffset * 2 + 10);
+
+    CGAffineTransform scale = CGAffineTransformScale(mergeView.transform, viewRatioScale, viewRatioScale);
+    CGAffineTransform translate = CGAffineTransformTranslate(mergeView.transform, ratioTranslateX, ratioTranslateY);
 
     _playerItem.videoComposition = [AVVideoComposition
                                     videoCompositionWithAsset:_playerItem.asset
@@ -2300,10 +2304,10 @@ return [UIColor colorWithRed:r / 255.0f green:g / 255.0f blue:b / 255.0f alpha:1
                                           [filter setValue:ciImage forKey:@"inputImage"];
 
 
-                                          if (!isIPhone8Width) {
-                                              [filter setValue:[ciImage imageByApplyingTransform:CGAffineTransformConcat(scale, translate)]
-                                                    forKey:kCIInputImageKey];
-                                          }
+
+                                          [filter setValue:[ciImage imageByApplyingTransform:CGAffineTransformConcat(scale, translate)]
+                                                forKey:kCIInputImageKey];
+
 
 
                                           outputImage = [filter.outputImage imageByCroppingToRect:request.sourceImage.extent];
@@ -2325,9 +2329,10 @@ return [UIColor colorWithRed:r / 255.0f green:g / 255.0f blue:b / 255.0f alpha:1
 #pragma mark - Export
 
 - (void)save:(NSDictionary *)options resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    bool isIPhone8Width = self.frame.size.width <= 375 && self.frame.size.height <= 667;
+    int viewHeight = isIPhone8Width ? self.frame.size.height : round((self.frame.size.width * 16) / 9);
 
-
-    CGRect mergedRect = CGRectMake(0, 0, self.frame.size.width, round((self.frame.size.width * 16) / 9));
+    CGRect mergedRect = CGRectMake(0, 0, self.frame.size.width, viewHeight);
     UIView *mergeView = [[UIView alloc] initWithFrame:mergedRect];
 
     mergeView.backgroundColor = [UIColor colorWithWhite:1 alpha:0];
