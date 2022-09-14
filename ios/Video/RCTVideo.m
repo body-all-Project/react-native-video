@@ -2272,10 +2272,14 @@ return [UIColor colorWithRed:r / 255.0f green:g / 255.0f blue:b / 255.0f alpha:1
     float brightness = [[colorControlsFilter valueForKey:@"inputBrightness"] floatValue];
     float contrast = [[colorControlsFilter valueForKey:@"inputContrast"] floatValue];
 
+    int ratioHeight = round((self.frame.size.width * 16) / 9);
+    int xOffset = self.frame.size.width - (self.frame.size.width * 0.85);
+    int yOffset = ratioHeight - ratioHeight * 0.85;
+
 
     bool isIPhone8Width = self.frame.size.width <= 375 && self.frame.size.height <= 667;
-    CGAffineTransform scale = CGAffineTransformScale(mergeView.transform, 0.5, 0.5);
-    CGAffineTransform translate = CGAffineTransformTranslate(mergeView.transform, 67,7);
+    CGAffineTransform scale = CGAffineTransformScale(mergeView.transform, 0.85, 0.85);
+    CGAffineTransform translate = CGAffineTransformTranslate(mergeView.transform, xOffset + 10, yOffset * 2 + 10);
 
     _playerItem.videoComposition = [AVVideoComposition
                                     videoCompositionWithAsset:_playerItem.asset
@@ -2323,9 +2327,11 @@ return [UIColor colorWithRed:r / 255.0f green:g / 255.0f blue:b / 255.0f alpha:1
 - (void)save:(NSDictionary *)options resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
 
 
-    CGRect mergedRect = CGRectMake(0, 0, self.frame.size.width, self.frame.size.height);
+    CGRect mergedRect = CGRectMake(0, 0, self.frame.size.width, round((self.frame.size.width * 16) / 9));
     UIView *mergeView = [[UIView alloc] initWithFrame:mergedRect];
+
     mergeView.backgroundColor = [UIColor colorWithWhite:1 alpha:0];
+//    mergeView.backgroundColor = [UIColor blackColor];
     //    [mergeView setOpaque:true];
 
     for( UIView *subView in [self subviews]) {
