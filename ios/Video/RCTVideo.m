@@ -404,10 +404,6 @@ static int const RCTVideoUnset = -1;
       _playerItem = playerItem;
       [self setPreferredForwardBufferDuration:_preferredForwardBufferDuration];
       [self addPlayerItemObservers];
-        if (!_isPlayerRole) {
-            [self setFilter:self->_filterName];
-            [self setColorCorrection:self->_colorCorrection];
-        }
 
       [self setMaxBitRate:self->_maxBitRate];
 
@@ -452,6 +448,9 @@ static int const RCTVideoUnset = -1;
 
           if (!_isPlayerRole) {
               [self setColorDefault];
+              [self setFilter:self->_filterName];
+              [self setColorCorrection:self->_colorCorrection];
+
           }
 
       }
@@ -2279,8 +2278,8 @@ return [UIColor colorWithRed:r / 255.0f green:g / 255.0f blue:b / 255.0f alpha:1
 
     bool isIPhone8Width = self.frame.size.width <= 375 && self.frame.size.height <= 667;
     float viewRatioScale = isIPhone8Width ? 1.44 : 0.85;
-    int ratioTranslateX = isIPhone8Width ? 5 : (xOffset + 4);
-    int ratioTranslateY = isIPhone8Width ? 0 : (yOffset * 2 + 16);
+    int ratioTranslateX = isIPhone8Width ? 5 : (xOffset + 3);
+    int ratioTranslateY = isIPhone8Width ? 0 : (yOffset * 2 + 17);
 
     CGAffineTransform scale = CGAffineTransformScale(mergeView.transform, viewRatioScale, viewRatioScale);
     CGAffineTransform translate = CGAffineTransformTranslate(mergeView.transform, ratioTranslateX, ratioTranslateY);
