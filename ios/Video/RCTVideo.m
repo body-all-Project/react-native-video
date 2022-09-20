@@ -2283,7 +2283,7 @@ return [UIColor colorWithRed:r / 255.0f green:g / 255.0f blue:b / 255.0f alpha:1
 
     float viewRatioScale = isIPhone8Width ? 1.44 : ratio;
     int ratioTranslateX = isIPhone8Width ? 5 : isIPhone11Width ? (xOffset - 18) : (xOffset + 3);
-    int ratioTranslateY = (isIPhone8Width || isIPhone11Width) ? (yOffset * 2 - 63) : (yOffset * 2 + 17);
+    int ratioTranslateY = isIPhone8Width ? 0 : isIPhone11Width ? (yOffset * 2 - 63) : (yOffset * 2 + 17);
 
     CGAffineTransform scale = CGAffineTransformScale(mergeView.transform, viewRatioScale, viewRatioScale);
     CGAffineTransform translate = CGAffineTransformTranslate(mergeView.transform, ratioTranslateX, ratioTranslateY);
