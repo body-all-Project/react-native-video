@@ -2270,16 +2270,20 @@ return [UIColor colorWithRed:r / 255.0f green:g / 255.0f blue:b / 255.0f alpha:1
     float saturation = [[colorControlsFilter valueForKey:@"inputSaturation"] floatValue];
     float brightness = [[colorControlsFilter valueForKey:@"inputBrightness"] floatValue];
     float contrast = [[colorControlsFilter valueForKey:@"inputContrast"] floatValue];
-
-    int ratioHeight = round((self.frame.size.width * 16) / 9);
-    float xOffset = self.frame.size.width - (self.frame.size.width * 0.85);
-    float yOffset = ratioHeight - ratioHeight * 0.85;
-
-
     bool isIPhone8Width = self.frame.size.width <= 375 && self.frame.size.height <= 667;
-    float viewRatioScale = isIPhone8Width ? 1.44 : 0.85;
-    int ratioTranslateX = isIPhone8Width ? 5 : (xOffset + 3);
-    int ratioTranslateY = isIPhone8Width ? 0 : (yOffset * 2 + 17);
+    bool isIPhone11Width = self.frame.size.width == 414;
+
+    float iPhone11Ratio = 0.7;
+    float iPhoneStandardRatio = 0.85;
+    float ratio = isIPhone11Width ? iPhone11Ratio : iPhoneStandardRatio;
+    float ratioHeight = round((self.frame.size.width * 16) / 9);
+    float xOffset = self.frame.size.width - (self.frame.size.width * ratio);
+    float yOffset = ratioHeight - (ratioHeight * ratio);
+
+
+    float viewRatioScale = isIPhone8Width ? 1.44 : ratio;
+    int ratioTranslateX = isIPhone8Width ? 5 : isIPhone11Width ? (xOffset - 18) : (xOffset + 3);
+    int ratioTranslateY = (isIPhone8Width || isIPhone11Width) ? (yOffset * 2 - 63) : (yOffset * 2 + 17);
 
     CGAffineTransform scale = CGAffineTransformScale(mergeView.transform, viewRatioScale, viewRatioScale);
     CGAffineTransform translate = CGAffineTransformTranslate(mergeView.transform, ratioTranslateX, ratioTranslateY);
