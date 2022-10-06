@@ -445,20 +445,19 @@ static int const RCTVideoUnset = -1;
                                 @"target": self.reactTag
                                 });
 
-
-          if (!_isPlayerRole) {
-              [self setColorDefault];
-              [self setFilter:self->_filterName];
-              [self setColorCorrection:self->_colorCorrection];
-
-          }
-
       }
     }];
+
+      if (!_isPlayerRole) {
+           [self setColorDefault];
+           [self setFilter:self->_filterName];
+           [self setColorCorrection:self->_colorCorrection];
+      }
   });
 
 
   _videoLoadStarted = YES;
+
 }
 
 - (void)setColorDefault {
@@ -2274,7 +2273,7 @@ return [UIColor colorWithRed:r / 255.0f green:g / 255.0f blue:b / 255.0f alpha:1
     bool isIPhone11Width = self.frame.size.width == 414;
 
     float iPhone11Ratio = 0.7;
-    float iPhoneStandardRatio = 0.85;
+    float iPhoneStandardRatio = 0.84;
     float ratio = isIPhone11Width ? iPhone11Ratio : iPhoneStandardRatio;
     float ratioHeight = round((self.frame.size.width * 16) / 9);
     float xOffset = self.frame.size.width - (self.frame.size.width * ratio);
@@ -2282,8 +2281,8 @@ return [UIColor colorWithRed:r / 255.0f green:g / 255.0f blue:b / 255.0f alpha:1
 
 
     float viewRatioScale = isIPhone8Width ? 1.44 : ratio;
-    int ratioTranslateX = isIPhone8Width ? 5 : isIPhone11Width ? (xOffset - 18) : (xOffset + 3);
-    int ratioTranslateY = isIPhone8Width ? 0 : isIPhone11Width ? (yOffset * 2 - 63) : (yOffset * 2 + 17);
+    int ratioTranslateX = isIPhone8Width ? 5 : isIPhone11Width ? (xOffset - 18) : (xOffset + 1);
+    int ratioTranslateY = isIPhone8Width ? 0 : isIPhone11Width ? (yOffset * 2 - 63) : (yOffset * 2 + 90);
 
     CGAffineTransform scale = CGAffineTransformScale(mergeView.transform, viewRatioScale, viewRatioScale);
     CGAffineTransform translate = CGAffineTransformTranslate(mergeView.transform, ratioTranslateX, ratioTranslateY);
